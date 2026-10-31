@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#07050f">
+<title>遊戯王 DUEL ARENA</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="title-mode">
+<canvas id="fx" aria-hidden="true"></canvas>
+
+<div id="app">
+  <header id="hud">
+    <div class="duelist foe">
+      <div class="crest" aria-hidden="true">
+        <svg viewBox="0 0 64 64"><defs><radialGradient id="crestA" cx="50%" cy="40%" r="65%"><stop offset="0" stop-color="#ff9bb0"/><stop offset=".55" stop-color="#b34bff"/><stop offset="1" stop-color="#2a0f4a"/></radialGradient></defs><circle cx="32" cy="32" r="29" fill="url(#crestA)" stroke="#e9c877" stroke-width="1.5"/><path d="M32 13c10 0 17 8 17 17 0 12-9 20-17 23-8-3-17-11-17-23 0-9 7-17 17-17z" fill="#160b26" opacity=".82"/><path d="M19 33c5-6 10-8 13-4 3-4 8-2 13 4-5-1-9 0-13 4-4-4-8-5-13-4z" fill="#f6e3a1"/><circle cx="32" cy="31" r="3.4" fill="#ff4d6d"/><path d="M24 44c5 3 11 3 16 0" stroke="#e9c877" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+      </div>
+      <div class="meta">
+        <div class="meta-top">
+          <span class="pname">闇の決闘者</span>
+          <span class="badge">AI</span>
+          <span class="deckcount"><i></i><b id="foe-deck">30</b></span>
+        </div>
+        <div class="lpbar"><i id="foe-lpbar"></i><span id="foe-lp">8000</span></div>
+        <div class="meta-sub">墓地 <span id="foe-grave">0</span> 枚</div>
+      </div>
+    </div>
+
+    <div class="turnbox">
+      <div class="turnno" id="turnno">TURN 1</div>
+      <div class="turnwho" id="turnwho">YOUR TURN</div>
+      <div class="turnline"></div>
+    </div>
+
+    <div class="duelist you">
+      <div class="meta">
+        <div class="meta-top">
+          <span class="deckcount"><i></i><b id="you-deck">30</b></span>
+          <span class="badge you">YOU</span>
+          <span class="pname">決闘者</span>
+        </div>
+        <div class="lpbar you"><i id="you-lpbar"></i><span id="you-lp">8000</span></div>
+        <div class="meta-sub">墓地 <span id="you-grave">0</span> 枚</div>
+      </div>
+      <div class="crest you" aria-hidden="true">
+        <svg viewBox="0 0 64 64"><defs><radialGradient id="crestB" cx="50%" cy="40%" r="65%"><stop offset="0" stop-color="#b9f6ff"/><stop offset=".55" stop-color="#3b7bff"/><stop offset="1" stop-color="#08123a"/></radialGradient></defs><circle cx="32" cy="32" r="29" fill="url(#crestB)" stroke="#e9c877" stroke-width="1.5"/><path d="M32 13c10 0 17 8 17 17 0 12-9 20-17 23-8-3-17-11-17-23 0-9 7-17 17-17z" fill="#07142b" opacity=".82"/><path d="M19 33c5-6 10-8 13-4 3-4 8-2 13 4-5-1-9 0-13 4-4-4-8-5-13-4z" fill="#f6e3a1"/><circle cx="32" cy="31" r="3.4" fill="#6ee7ff"/><path d="M24 44c5 3 11 3 16 0" stroke="#e9c877" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+  </header>
+
+  <main id="arena">
+    <div class="arena-ring" aria-hidden="true"></div>
+    <div class="arena-ring small" aria-hidden="true"></div>
+
+    <div class="row foe-hand-row">
+      <div id="foe-hand" class="hand foe-hand" aria-label="相手の手札"></div>
+    </div>
+
+    <div class="row zone-row st-row">
+      <div id="foe-spells" class="zones spells" data-side="foe" data-label="MAGIC / TRAP"></div>
+    </div>
+
+    <div class="row zone-row mon-row">
+      <div id="foe-monsters" class="zones monsters" data-side="foe" data-label="MONSTERS"></div>
+    </div>
+
+    <div class="field-mark" aria-hidden="true">☥</div>
+    <div class="divider" aria-hidden="true">
+      <span class="divider-line"></span>
+      <span class="divider-sigil">☥</span>
+      <span class="divider-line"></span>
+    </div>
+
+    <div class="row zone-row mon-row you-row">
+      <div id="you-monsters" class="zones monsters" data-side="you" data-label="MONSTERS"></div>
+    </div>
+
+    <div class="row zone-row st-row">
+      <div id="you-spells" class="zones spells" data-side="you" data-label="MAGIC / TRAP"></div>
+    </div>
+
+    <div class="row hand-row">
+      <div id="you-hand" class="hand you-hand" aria-label="あなたの手札"></div>
+    </div>
+
+    <div id="phase-banner" class="phase-banner"></div>
+    <div id="hint" class="hint"></div>
+
+    <aside id="log" class="log" aria-label="デュエルログ"></aside>
+  </main>
+
+  <footer id="controls">
+    <button id="btn-help" class="round" aria-label="遊び方">?</button>
+    <button id="btn-end" class="end-turn">ターン終了</button>
+    <button id="btn-sound" class="round" aria-label="サウンド">♪</button>
+  </footer>
+</div>
+
+<div id="action-bar" class="action-bar" role="toolbar" aria-label="カード操作"></div>
+<div id="tooltip" class="tooltip" aria-hidden="true"></div>
+<div id="dmg-layer" class="dmg-layer" aria-hidden="true"></div>
+<div id="flash" class="flash" aria-hidden="true"></div>
+<div id="overlay" class="overlay" hidden></div>
+
+<script src="js/cards.js" defer></script>
+<script src="js/art-monsters.js" defer></script>
+<script src="js/art-magic.js" defer></script>
+<script src="js/core.js" defer></script>
+<script src="js/battle.js" defer></script>
+<script src="js/ai.js" defer></script>
+<script src="js/ui.js" defer></script>
+</body>
+</html>
