@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#05070d">
+<title>遊戯王 — DUEL ARENA</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🃏</text></svg>">
+</head>
+<body>
+<div id="app">
+  <header id="topbar">
+    <h1 class="logo"><span class="logo-jp">遊戯王</span><span class="logo-en">DUEL&nbsp;ARENA</span></h1>
+    <div class="turnbox">
+      <span class="turn">TURN <b id="turnno">1</b></span>
+      <span class="phase" id="phase">ドロー</span>
+      <span class="turnowner" id="turnowner">あなたのターン</span>
+    </div>
+    <div class="topbtns">
+      <button id="btnHelp" class="mini">ルール</button>
+      <button id="btnRestart" class="mini">最初から</button>
+      <button id="btnSound" class="mini icon" aria-label="サウンド切替" title="サウンド">♪</button>
+    </div>
+  </header>
+
+  <div id="stage">
+    <main id="arena">
+      <!-- Opponent -->
+      <section class="side opp" id="opp-side">
+        <div class="hud" id="opp-hud">
+          <div class="who">
+            <div class="avatar ai">♛</div>
+            <div class="names"><div class="pname">冥界の王 カオス</div><div class="psub">CHALLENGER</div></div>
+          </div>
+          <div class="lpbox">
+            <div class="lptrack"><i id="o-lpfill"></i></div>
+            <div class="lpnum"><span id="o-lp">8000</span><small>LP</small></div>
+          </div>
+          <div class="piles">
+            <div class="pile"><b id="o-deckn">34</b><span>DECK</span></div>
+            <div class="pile"><b id="o-graven">0</b><span>GRAVE</span></div>
+            <div class="pile"><b id="o-handn">5</b><span>HAND</span></div>
+          </div>
+        </div>
+        <div class="hand ai-hand" id="o-hand"></div>
+        <div class="board">
+          <div class="row-label left">魔法・罠</div>
+          <div class="row st-row" id="o-st"></div>
+          <div class="row-label left">モンスター</div>
+          <div class="row mon-row" id="o-mon"></div>
+        </div>
+      </section>
+
+      <div class="midline">
+        <span class="line"></span>
+        <span id="statusline">デュエル開始</span>
+        <span class="line"></span>
+      </div>
+
+      <!-- Player -->
+      <section class="side me" id="me-side">
+        <div class="board">
+          <div class="row-label left">モンスター</div>
+          <div class="row mon-row" id="p-mon"></div>
+          <div class="row-label left">魔法・罠</div>
+          <div class="row st-row" id="p-st"></div>
+        </div>
+        <div class="hand" id="p-hand"></div>
+        <div class="hud" id="me-hud">
+          <div class="who">
+            <div class="avatar me">♟</div>
+            <div class="names"><div class="pname">あなた</div><div class="psub">DUELIST</div></div>
+          </div>
+          <div class="lpbox">
+            <div class="lptrack"><i id="p-lpfill"></i></div>
+            <div class="lpnum"><span id="p-lp">8000</span><small>LP</small></div>
+          </div>
+          <div class="piles">
+            <div class="pile"><b id="p-deckn">34</b><span>DECK</span></div>
+            <div class="pile"><b id="p-graven">0</b><span>GRAVE</span></div>
+            <div class="pile"><b id="p-handn">5</b><span>HAND</span></div>
+          </div>
+          <div class="phasebtns">
+            <button id="btnBattle" class="primary">バトルフェイズ</button>
+            <button id="btnEnd">ターン終了</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <aside id="logpanel">
+      <div class="loghead">DUEL LOG<button id="btnLogClose" class="icon" aria-label="閉じる">×</button></div>
+      <div id="log"></div>
+    </aside>
+  </div>
+</div>
+
+<div id="actionbar" class="hidden"></div>
+<button id="btnLogToggle">LOG</button>
+
+<div id="overlay" class="hidden">
+  <div class="dialog" id="dialog" role="dialog" aria-modal="true"></div>
+</div>
+
+<script src="js/cards.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
