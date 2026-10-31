@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#05060f">
+<title>DUEL LEGENDS — 決闘伝説</title>
+<meta name="description" content="DUEL LEGENDS は、光と闇の決闘者がカードで激突するオリジナルのブラウザカードバトルゲームです。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23070a18'/%3E%3Cpath d='M32 8l18 12v24L32 56 14 44V20z' fill='none' stroke='%23ffd166' stroke-width='2.4'/%3E%3Ccircle cx='32' cy='32' r='8' fill='%235fe7ff'/%3E%3C/svg%3E">
+<link rel="preload" href="./assets/fonts/cinzel-700.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="./assets/fonts/orbitron-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="./css/styles.css">
+</head>
+<body>
+<div class="bg-scene" aria-hidden="true">
+  <div class="bg-aurora bg-aurora-a"></div>
+  <div class="bg-aurora bg-aurora-b"></div>
+  <div class="bg-stars"></div>
+  <div class="bg-grid"></div>
+  <div class="bg-vignette"></div>
+</div>
+
+<main id="app">
+  <!-- ============================ TITLE ============================ -->
+  <section id="title-screen" class="screen title-screen">
+    <div class="title-crest" aria-hidden="true">
+      <svg viewBox="0 0 400 400">
+        <defs>
+          <linearGradient id="crest-gold" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#fff2c4"/>
+            <stop offset="45%" stop-color="#e0ae4b"/>
+            <stop offset="100%" stop-color="#8c611c"/>
+          </linearGradient>
+          <linearGradient id="crest-cyan" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#b9f6ff"/>
+            <stop offset="100%" stop-color="#2286b8"/>
+          </linearGradient>
+          <filter id="crest-glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="6" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <g opacity="0.9" filter="url(#crest-glow)">
+          <circle cx="200" cy="200" r="150" fill="none" stroke="url(#crest-gold)" stroke-width="1.2" stroke-dasharray="2 10"/>
+          <circle cx="200" cy="200" r="128" fill="none" stroke="url(#crest-cyan)" stroke-width="1" opacity="0.6"/>
+          <path d="M200 54 L 326 126 L 326 274 L 200 346 L 74 274 L 74 126 Z" fill="none" stroke="url(#crest-gold)" stroke-width="2"/>
+          <path d="M200 78 L 305 138 L 305 262 L 200 322 L 95 262 L 95 138 Z" fill="none" stroke="url(#crest-cyan)" stroke-width="0.8" opacity="0.5" stroke-dasharray="6 8"/>
+          <path d="M200 112 C 156 112 132 148 140 186 C 148 222 184 238 214 222 C 242 208 250 172 232 146 C 220 128 210 118 200 112 Z" fill="none" stroke="url(#crest-cyan)" stroke-width="2"/>
+          <path d="M118 204 C 82 172 66 128 76 86 C 108 104 134 138 144 176 Z" fill="none" stroke="url(#crest-gold)" stroke-width="1.6" opacity="0.8"/>
+          <path d="M282 204 C 318 172 334 128 324 86 C 292 104 266 138 256 176 Z" fill="none" stroke="url(#crest-gold)" stroke-width="1.6" opacity="0.8"/>
+          <circle cx="200" cy="176" r="7" fill="#b9f6ff"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="title-inner">
+      <p class="eyebrow"><span></span>ORIGINAL CARD BATTLE<span></span></p>
+      <h1 class="logo"><span class="logo-main">DUEL</span><span class="logo-sub">LEGENDS</span></h1>
+      <p class="logo-jp">決 闘 伝 説</p>
+      <p class="tagline">魂を懸けた、カードの闘い。</p>
+
+      <div class="title-actions">
+        <button id="start-btn" class="btn-primary" aria-label="START">
+          <span class="btn-glow"></span>
+          <span class="btn-label">START</span>
+          <span class="btn-note">デュエル開始</span>
+        </button>
+        <button id="howto-btn" class="btn-ghost">遊び方</button>
+      </div>
+
+      <div class="title-decks">
+        <div class="deck-chip player">
+          <span class="chip-orb"></span>
+          <div><b>光の軍勢</b><small>LIGHT LEGION · 24</small></div>
+        </div>
+        <div class="vs-badge">VS</div>
+        <div class="deck-chip enemy">
+          <span class="chip-orb"></span>
+          <div><b>闇の軍勢</b><small>DARK LEGION · 25</small></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="title-showcase" id="title-showcase" aria-hidden="true"></div>
+
+    <p class="disclaimer">オリジナルカードゲーム / 既存の作品・企業とは一切関係ありません。</p>
+  </section>
+
+  <!-- ============================ DUEL ============================ -->
+  <section id="duel-screen" class="screen duel-screen hidden">
+    <header class="topbar">
+      <div class="duelist enemy" id="ai-plate">
+        <div class="avatar enemy-avatar" aria-hidden="true">
+          <svg viewBox="0 0 48 48"><path d="M24 5l15 7v12c0 10-7 17-15 20-8-3-15-10-15-20V12z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M24 15v16M18 21l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+        <div class="duelist-info">
+          <div class="duelist-name">闇の決闘者 <span class="ai-thinking" id="ai-thinking">思考中…</span></div>
+          <div class="lp-track"><div class="lp-fill enemy" id="ai-lp-fill"></div><div class="lp-ticks"></div></div>
+        </div>
+        <div class="lp-value enemy" id="ai-lp">8000</div>
+        <div class="counter-group">
+          <span><i>手</i><b id="ai-hand">5</b></span>
+          <span><i>山</i><b id="ai-deck">20</b></span>
+          <span><i>墓</i><b id="ai-grave">0</b></span>
+        </div>
+      </div>
+
+      <div class="turn-hub">
+        <div class="turn-label" id="turn-label">TURN 1</div>
+        <div class="phase-steps" id="phase-steps">
+          <span data-phase="main">MAIN</span>
+          <span data-phase="battle">BATTLE</span>
+          <span data-phase="end">END</span>
+        </div>
+        <div class="turn-owner" id="turn-owner">YOUR TURN</div>
+      </div>
+
+      <div class="topbar-actions">
+        <button id="sound-btn" class="icon-btn" aria-label="サウンドを切り替え" title="サウンド">
+          <svg class="icon-on" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 010 7M19 6a9 9 0 010 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <svg class="icon-off" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 9l6 6M22 9l-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+        <button id="rules-btn" class="icon-btn" aria-label="ルール" title="ルール">?</button>
+        <button id="surrender-btn" class="icon-btn" aria-label="降参" title="降参">
+          <svg viewBox="0 0 24 24"><path d="M6 21V3M6 4h11l-2 4 2 4H6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/></svg>
+        </button>
+        <button id="log-toggle" class="icon-btn log-toggle" aria-label="ログ" title="ログ">
+          <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="arena">
+      <div class="board" id="board">
+        <div class="board-emblem" aria-hidden="true">
+          <svg viewBox="0 0 600 600">
+            <defs>
+              <linearGradient id="field-gold" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#ffe6a6"/>
+                <stop offset="50%" stop-color="#b98322"/>
+                <stop offset="100%" stop-color="#ffe6a6"/>
+              </linearGradient>
+              <linearGradient id="field-cyan" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#b9f6ff"/>
+                <stop offset="100%" stop-color="#1a6f9e"/>
+              </linearGradient>
+            </defs>
+            <circle cx="300" cy="300" r="262" fill="none" stroke="url(#field-gold)" stroke-width="1.2" stroke-dasharray="2 12" opacity="0.7"/>
+            <circle cx="300" cy="300" r="228" fill="none" stroke="url(#field-cyan)" stroke-width="1" opacity="0.55"/>
+            <circle cx="300" cy="300" r="174" fill="none" stroke="url(#field-gold)" stroke-width="1" opacity="0.4" stroke-dasharray="7 9"/>
+            <path d="M300 74 L 500 188 L 500 412 L 300 526 L 100 412 L 100 188 Z" fill="none" stroke="url(#field-gold)" stroke-width="1.6" opacity="0.8"/>
+            <path d="M300 106 L 466 200 L 466 400 L 300 494 L 134 400 L 134 200 Z" fill="none" stroke="url(#field-cyan)" stroke-width="0.8" opacity="0.55"/>
+            <g fill="none" stroke="url(#field-cyan)" stroke-width="1" opacity="0.55">
+              <path d="M300 106 L 300 494 M 134 300 L 466 300"/>
+              <path d="M300 174 L 408 300 L 300 426 L 192 300 Z"/>
+              <path d="M300 204 L 372 300 L 300 396 L 228 300 Z"/>
+            </g>
+            <g opacity="0.85">
+              <path d="M300 234 C 270 234 252 258 260 284 C 268 308 300 320 324 306 C 346 294 352 266 336 246 C 326 236 314 232 300 234 Z" fill="none" stroke="url(#field-cyan)" stroke-width="1.6"/>
+              <path d="M236 288 C 206 266 194 234 202 204 C 226 218 244 244 250 272 Z" fill="none" stroke="url(#field-gold)" stroke-width="1.2" opacity="0.75"/>
+              <path d="M364 288 C 394 266 406 234 398 204 C 374 218 356 244 350 272 Z" fill="none" stroke="url(#field-gold)" stroke-width="1.2" opacity="0.75"/>
+              <circle cx="300" cy="274" r="5" fill="#b9f6ff" opacity="0.8"/>
+            </g>
+            <g fill="#9fdcff" opacity="0.5">
+              <circle cx="300" cy="38" r="3"/><circle cx="300" cy="562" r="3"/>
+              <circle cx="38" cy="300" r="3"/><circle cx="562" cy="300" r="3"/>
+            </g>
+          </svg>
+        </div>
+        <div class="side side-ai">
+          <div class="zone-row st-row" id="ai-spells" aria-label="相手の魔法・罠ゾーン"></div>
+          <div class="zone-row monster-row" id="ai-monsters" aria-label="相手のモンスターゾーン"></div>
+        </div>
+
+        <div class="center-rail">
+          <div class="energy-line"></div>
+          <div class="phase-banner" id="phase-banner"><span class="pb-text">YOUR TURN</span></div>
+          <div class="energy-line"></div>
+        </div>
+
+        <div class="side side-human">
+          <div class="zone-row monster-row" id="human-monsters" aria-label="自分のモンスターゾーン"></div>
+          <div class="zone-row st-row" id="human-spells" aria-label="自分の魔法・罠ゾーン"></div>
+        </div>
+      </div>
+
+      <aside class="log-panel" id="log-panel">
+        <div class="log-head">
+          <span>DUEL LOG</span>
+          <button id="log-close" class="log-close" aria-label="ログを閉じる">×</button>
+        </div>
+        <div class="log-body" id="log-body"></div>
+      </aside>
+    </div>
+
+    <div class="bottom-area">
+      <div class="duelist self" id="human-plate">
+        <div class="avatar player-avatar" aria-hidden="true">
+          <svg viewBox="0 0 48 48"><path d="M24 5l15 7v12c0 10-7 17-15 20-8-3-15-10-15-20V12z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="24" cy="21" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15 34c2-5 5-7 9-7s7 2 9 7" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        </div>
+        <div class="duelist-info">
+          <div class="duelist-name">あなた <span class="turn-chip" id="human-turn-chip">YOUR TURN</span></div>
+          <div class="lp-track"><div class="lp-fill player" id="human-lp-fill"></div><div class="lp-ticks"></div></div>
+        </div>
+        <div class="lp-value player" id="human-lp">8000</div>
+      </div>
+
+      <div class="hand-wrap">
+        <div class="hint-bar hidden" id="hint-bar">
+          <span class="hint-dot"></span>
+          <span id="hint-text">対象を選択</span>
+          <button id="hint-cancel" class="hint-cancel">キャンセル</button>
+        </div>
+        <div class="hand" id="hand"></div>
+      </div>
+
+      <div class="controls">
+        <button id="battle-btn" class="ctl-btn battle">
+          <span class="ctl-main">BATTLE</span>
+          <span class="ctl-sub">バトルフェイズ</span>
+        </button>
+        <button id="end-btn" class="ctl-btn end">
+          <span class="ctl-main">END</span>
+          <span class="ctl-sub">ターン終了</span>
+        </button>
+        <div class="pile-info">
+          <span>デッキ <b id="human-deck">20</b></span>
+          <span>墓地 <b id="human-grave">0</b></span>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="fx-layer" class="fx-layer" aria-hidden="true"></div>
+<div id="action-panel" class="action-panel hidden" role="dialog" aria-label="カードの行動"></div>
+<div id="modal-layer" class="modal-layer hidden"></div>
+<div id="toasts" class="toasts" aria-live="polite"></div>
+
+<noscript><p class="noscript">このゲームをプレイするには JavaScript を有効にしてください。</p></noscript>
+<script type="module" src="./js/main.js"></script>
+</body>
+</html>
