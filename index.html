@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+  <meta name="theme-color" content="#05060f" />
+  <meta name="description" content="遊戯王 inspired browser card duel — 千年の闘志を、その手に。" />
+  <title>遊戯王 | DUEL MONSTERS</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23070a1c'/%3E%3Cpath d='M8 32Q32 8 56 32Q32 56 8 32Z' fill='none' stroke='%23e8c46a' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='7' fill='%23e8c46a'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app">
+    <div id="stars" aria-hidden="true"></div>
+
+    <!-- ================= TITLE ================= -->
+    <section id="title" class="screen">
+      <div class="title-glow" aria-hidden="true"></div>
+      <div class="magic-circle" aria-hidden="true">
+        <div class="ring ring-a"></div>
+        <div class="ring ring-b"></div>
+        <div class="ring ring-c"></div>
+      </div>
+
+      <div id="title-cards" class="title-cards" aria-hidden="true"></div>
+
+      <div class="title-content">
+        <svg class="eye-emblem" viewBox="0 0 240 140" aria-hidden="true">
+          <defs>
+            <linearGradient id="goldGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#fff6d8"/>
+              <stop offset=".45" stop-color="#e8c46a"/>
+              <stop offset="1" stop-color="#8a6a2f"/>
+            </linearGradient>
+          </defs>
+          <path d="M18 70 Q120 6 222 70 Q120 134 18 70Z" fill="none" stroke="url(#goldGrad)" stroke-width="4"/>
+          <path d="M40 70 Q120 22 200 70 Q120 118 40 70Z" fill="none" stroke="url(#goldGrad)" stroke-width="1.5" opacity=".5"/>
+          <circle cx="120" cy="70" r="27" fill="none" stroke="url(#goldGrad)" stroke-width="4"/>
+          <circle cx="120" cy="70" r="10" fill="url(#goldGrad)"/>
+          <path d="M120 97 v33" stroke="url(#goldGrad)" stroke-width="4"/>
+          <path d="M97 121 q23 14 46 0" fill="none" stroke="url(#goldGrad)" stroke-width="4"/>
+          <path d="M100 108 q20 10 40 0" fill="none" stroke="url(#goldGrad)" stroke-width="3" opacity=".75"/>
+          <path d="M120 43 v-15" stroke="url(#goldGrad)" stroke-width="3"/>
+        </svg>
+
+        <h1 class="logo">遊戯王</h1>
+        <p class="logo-sub">DUEL&nbsp;MONSTERS</p>
+        <p class="tagline">千年の闘志を、その手に。</p>
+
+        <div class="title-actions">
+          <button class="btn primary xl" data-action="start">デュエル開始</button>
+          <button class="btn ghost" data-action="how">遊び方</button>
+        </div>
+        <p class="disclaimer">A fan-made tribute · 非公式ファンメイド</p>
+      </div>
+    </section>
+
+    <!-- ================= GAME ================= -->
+    <section id="game" class="screen hidden">
+      <header id="hud">
+        <div class="duelist opp" id="hud-ai">
+          <div class="avatar">🤖</div>
+          <div class="duelist-main">
+            <div class="duelist-row">
+              <span class="duelist-name">AI DUELIST</span>
+              <span class="lp" id="lp-ai">4000</span>
+            </div>
+            <div class="lp-track"><div class="lp-fill" id="lpbar-ai"></div></div>
+            <div class="counts">
+              <span title="手札">🖐 <b id="handcount-ai">5</b></span>
+              <span title="デッキ">📚 <b id="deckcount-ai">29</b></span>
+              <span title="墓地">⚰️ <b id="gravecount-ai">0</b></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hud-center">
+          <div class="turn-pill" id="turn-pill">
+            <span class="turn-num" id="turn-num">TURN 1</span>
+            <span class="turn-side" id="turn-side">YOUR TURN</span>
+          </div>
+          <div class="hud-tools">
+            <button class="icon-btn" data-action="sound" id="sound-btn" title="サウンド" aria-label="サウンド切替">🔊</button>
+            <button class="icon-btn" data-action="how" title="遊び方" aria-label="遊び方">？</button>
+            <button class="icon-btn" data-action="quit" title="タイトルへ" aria-label="タイトルへ">✕</button>
+          </div>
+        </div>
+
+        <div class="duelist you" id="hud-you">
+          <div class="avatar">🧑‍🎤</div>
+          <div class="duelist-main">
+            <div class="duelist-row">
+              <span class="duelist-name">YOU</span>
+              <span class="lp" id="lp-player">4000</span>
+            </div>
+            <div class="lp-track"><div class="lp-fill" id="lpbar-player"></div></div>
+            <div class="counts">
+              <span title="手札">🖐 <b id="handcount-player">5</b></span>
+              <span title="デッキ">📚 <b id="deckcount-player">29</b></span>
+              <span title="墓地">⚰️ <b id="gravecount-player">0</b></span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="game-body">
+        <main id="board">
+          <div class="board-sigil" aria-hidden="true"></div>
+
+          <div class="side opp-side">
+            <div id="opp-hand" class="hand-mini" aria-label="相手の手札"></div>
+            <div class="row-wrap">
+              <span class="row-label">MAGIC / TRAP</span>
+              <div id="opp-spells" class="zone-row spell-row" aria-label="相手の魔法・罠ゾーン"></div>
+            </div>
+            <div class="row-wrap">
+              <span class="row-label">MONSTER</span>
+              <div id="opp-monsters" class="zone-row monster-row" aria-label="相手のモンスターゾーン"></div>
+            </div>
+          </div>
+
+          <div class="board-divider" aria-hidden="true">
+            <span></span><i>◆</i><span></span>
+          </div>
+
+          <div class="side you-side">
+            <div class="row-wrap">
+              <span class="row-label">MONSTER</span>
+              <div id="you-monsters" class="zone-row monster-row" aria-label="自分のモンスターゾーン"></div>
+            </div>
+            <div class="row-wrap">
+              <span class="row-label">MAGIC / TRAP</span>
+              <div id="you-spells" class="zone-row spell-row" aria-label="自分の魔法・罠ゾーン"></div>
+            </div>
+            <div id="you-hand" class="hand" aria-label="自分の手札"></div>
+          </div>
+        </main>
+
+        <aside id="log-panel" aria-label="デュエルログ">
+          <h2><span>DUEL LOG</span><i>◆</i></h2>
+          <div id="log"></div>
+        </aside>
+      </div>
+
+      <div id="ticker" class="ticker" aria-live="polite"></div>
+      <div id="action-bar" class="action-bar"></div>
+      <div id="fx-layer" class="fx-layer" aria-hidden="true"></div>
+    </section>
+
+    <!-- ================= RESULT ================= -->
+    <div id="result" class="overlay" role="dialog" aria-modal="true" aria-labelledby="result-title">
+      <div class="result-panel">
+        <div class="result-emblem" id="result-emblem">✦</div>
+        <h2 id="result-title">VICTORY</h2>
+        <p class="result-jp" id="result-jp">勝利</p>
+        <p class="result-sub" id="result-sub"></p>
+        <div class="result-stats" id="result-stats"></div>
+        <div class="result-actions">
+          <button class="btn primary" data-action="rematch">再戦</button>
+          <button class="btn ghost" data-action="to-title">タイトルへ</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= HOW TO ================= -->
+    <div id="how" class="overlay" role="dialog" aria-modal="true" aria-labelledby="how-title">
+      <div class="how-panel">
+        <button class="icon-btn close" data-action="close-how" aria-label="閉じる">✕</button>
+        <h2 id="how-title">遊び方 <small>HOW TO DUEL</small></h2>
+        <ul class="rules">
+          <li><b>勝利条件</b> — 相手のライフポイント（4000）を0にするか、相手のデッキを尽きさせれば勝利。</li>
+          <li><b>召喚</b> — 手札のモンスターを選び「召喚」または「セット」。召喚は1ターンに1体まで。</li>
+          <li><b>生け贄</b> — レベル5・6は1体、レベル7以上は2体の生け贄が必要。生け贄にするモンスターを選択しよう。</li>
+          <li><b>攻撃</b> — 自分の攻撃表示モンスターを選び、相手モンスターか「直接攻撃」を選択。攻撃表示同士なら攻撃力の差がダメージに。</li>
+          <li><b>魔法・罠</b> — 魔法は発動、罠はセット。罠は相手の召喚・攻撃に自動で反応する。</li>
+          <li><b>守備表示</b> — セットしたモンスターは守備表示。攻撃力より守備力が高いモンスターで守ろう。</li>
+        </ul>
+        <div class="how-note">カードはタップ／クリックで選択。画面下のボタンから行動を選べます。</div>
+        <button class="btn primary" data-action="close-how">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
