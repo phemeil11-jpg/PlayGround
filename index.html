@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#050b16">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>POLARIS — 極北決闘</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="sky-wrap" aria-hidden="true">
+  <canvas id="scene"></canvas>
+  <div class="sky-vignette"></div>
+  <div class="ice-shelf"></div>
+  <div class="frame-corners"></div>
+</div>
+
+<div class="app" id="app">
+  <header class="hud">
+    <button class="brand" id="brandBtn" type="button" aria-label="POLARIS 極北決闘">
+      <span class="brand-main">POLARIS</span>
+      <span class="brand-sub">極北決闘</span>
+    </button>
+    <div class="hud-right">
+      <button class="room-chip" id="roomBtn" type="button" title="ルーム招待リンクを共有">
+        <span class="room-label">ROOM</span>
+        <b id="roomCode">-----</b>
+        <span class="link-dot" id="linkDot" aria-hidden="true"></span>
+      </button>
+      <button class="hud-btn" id="inviteBtn" type="button">招待</button>
+      <button class="hud-btn" id="logBtn" type="button">記録</button>
+      <button class="hud-btn" id="settingsBtn" type="button">設定</button>
+    </div>
+  </header>
+
+  <main class="arena" id="arena">
+    <section class="side opp-side" aria-label="相手フィールド">
+      <div class="duelist opp-duelist">
+        <div class="avatar avatar-opp" id="oppAvatar" aria-hidden="true"><span>氷</span></div>
+        <div class="idmeta">
+          <span class="duelist-name" id="oppName">ARCTIC ECHO</span>
+          <span class="duelist-tag" id="oppTag">HOLOGRAM / 訓練投影</span>
+        </div>
+        <div class="lpbox">
+          <div class="lp-top"><span>LIFE POINT</span><b id="oppLP">8000</b></div>
+          <div class="lpbar"><i id="oppLPBar"></i></div>
+        </div>
+        <div class="piles">
+          <span>DECK <b id="oppDeck">25</b></span>
+          <span>HAND <b id="oppHand">5</b></span>
+          <span>GY <b id="oppGY">0</b></span>
+        </div>
+      </div>
+      <div class="opp-hand" id="oppHandRow" aria-hidden="true"></div>
+      <div class="field opp-field">
+        <div class="row back" id="oppSpells" data-owner="1" data-row="spells"></div>
+        <div class="row front" id="oppMonsters" data-owner="1" data-row="monsters"></div>
+      </div>
+    </section>
+
+    <div class="midline">
+      <span class="mid-turn" id="turnLabel">TURN 01</span>
+      <span class="mid-rule"></span>
+      <b class="mid-phase" id="phaseLabel">YOUR TURN</b>
+      <span class="mid-rule"></span>
+      <span class="mid-mode" id="modeLabel">MAIN PHASE</span>
+    </div>
+
+    <section class="side me-side" aria-label="自分のフィールド">
+      <div class="field my-field">
+        <div class="row front" id="myMonsters" data-owner="0" data-row="monsters"></div>
+        <div class="row back" id="mySpells" data-owner="0" data-row="spells"></div>
+      </div>
+      <div class="duelist my-duelist">
+        <div class="avatar avatar-me" id="myAvatar" aria-hidden="true"><span>極</span></div>
+        <div class="idmeta">
+          <span class="duelist-name" id="myName">極夜の主</span>
+          <span class="duelist-tag" id="myTag">HOST / 北極点</span>
+        </div>
+        <div class="lpbox">
+          <div class="lp-top"><span>LIFE POINT</span><b id="myLP">8000</b></div>
+          <div class="lpbar"><i id="myLPBar"></i></div>
+        </div>
+        <div class="piles">
+          <span>DECK <b id="myDeck">25</b></span>
+          <span>HAND <b id="myHand">5</b></span>
+          <span>GY <b id="myGY">0</b></span>
+        </div>
+      </div>
+      <div class="hand-zone">
+        <div class="hand" id="hand" aria-label="手札"></div>
+      </div>
+      <div class="info-strip" id="infoStrip">
+        <span class="info-kicker">SELECT</span>
+        <span class="info-text">手札のカードをタップして、極夜の盤面に配置する。</span>
+      </div>
+    </section>
+  </main>
+
+  <footer class="actionbar" id="actionbar" aria-label="操作"></footer>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="turn-banner" id="turnBanner" aria-hidden="true"></div>
+
+<aside class="log-panel" id="logPanel" aria-label="デュエル記録" aria-hidden="true">
+  <div class="log-head">
+    <span>DUEL RECORD</span>
+    <button class="hud-btn" id="logClose" type="button">閉じる</button>
+  </div>
+  <ol class="log-list" id="logList"></ol>
+</aside>
+
+<div class="modal" id="modal" hidden>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-head">
+      <span class="modal-kicker" id="modalKicker">POLARIS</span>
+      <h2 id="modalTitle">設定</h2>
+      <button class="hud-btn" id="modalClose" type="button">閉じる</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<div class="result" id="result" hidden>
+  <div class="result-inner">
+    <span class="result-kicker" id="resultKicker">DUEL COMPLETE</span>
+    <h2 class="result-title" id="resultTitle">VICTORY</h2>
+    <p class="result-sub" id="resultSub">極夜はあなたのものだ。</p>
+    <div class="result-stats" id="resultStats"></div>
+    <div class="result-actions">
+      <button class="btn primary" id="rematchBtn" type="button">再戦</button>
+      <button class="btn" id="resultInviteBtn" type="button">ルームを共有</button>
+      <button class="btn ghost" id="resultCloseBtn" type="button">盤面を見る</button>
+    </div>
+  </div>
+</div>
+
+<noscript><div class="noscript">POLARIS を遊ぶには JavaScript を有効にしてください。</div></noscript>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
