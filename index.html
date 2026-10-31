@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#03101f">
+  <meta name="description" content="北極を舞台にした、攻守表式のオンラインカードデュエル。4×2スロット、タッチ操作、傾き視差。">
+  <title>北極決闘 / ARCTIC DUEL</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="world" aria-hidden="true">
+    <div class="sky-glow"></div>
+    <div class="aurora aurora--1"></div>
+    <div class="aurora aurora--2"></div>
+    <div class="aurora aurora--3"></div>
+    <canvas id="snow"></canvas>
+    <div class="mountains mountains--far"></div>
+    <div class="mountains mountains--near"></div>
+    <div class="ice-field"></div>
+    <div class="crystal crystal--1"></div>
+    <div class="crystal crystal--2"></div>
+    <div class="crystal crystal--3"></div>
+    <div class="crystal crystal--4"></div>
+    <div class="vignette"></div>
+    <div class="grain"></div>
+  </div>
+
+  <div id="app">
+    <header id="hud">
+      <div class="brand">
+        <span class="brand-jp">北極決闘</span>
+        <span class="brand-en">ARCTIC DUEL <i>/</i> ATK &amp; DEF TABLE</span>
+      </div>
+      <div class="hud-tools">
+        <button id="roomBtn" class="chip chip--room" type="button">
+          <span class="chip-label">ROOM</span><b id="roomCode">----</b>
+        </button>
+        <span id="linkState" class="link-state" data-state="connecting">
+          <span class="link-line"></span><span id="linkText">LINK</span>
+        </span>
+        <button id="tiltBtn" class="chip" type="button">傾き OFF</button>
+        <button id="soundBtn" class="chip" type="button">音 OFF</button>
+      </div>
+    </header>
+
+    <main id="stage">
+      <section class="seat seat--opp" id="oppSeat">
+        <div class="player-bar" id="oppBar">
+          <div class="p-id">
+            <span class="p-name" id="oppName">北極の守護者</span>
+            <span class="p-tag" id="oppTag">AI WARDEN</span>
+          </div>
+          <div class="p-lp">
+            <span class="lp-label">LP</span>
+            <span class="lp-value" id="oppLp">4000</span>
+            <span class="lp-bar"><i id="oppLpBar"></i></span>
+          </div>
+          <div class="p-meta"><span>手札 <b id="oppHandCount">5</b></span><span>山札 <b id="oppDeckCount">19</b></span></div>
+        </div>
+        <div class="hand-opp" id="oppHand" aria-hidden="true"></div>
+      </section>
+
+      <section class="board-shell" id="boardShell">
+        <div class="board-glow"></div>
+        <div class="board-topline"><span>NORTH TABLE</span><span id="boardRound">ROUND 01</span></div>
+        <div class="board-row" id="oppBoard" data-seat="1"></div>
+        <div class="axis" id="axis">
+          <span class="axis-line"></span>
+          <div class="turn-orb" id="turnOrb">
+            <div class="turn-ring"></div>
+            <div class="turn-core">
+              <span id="turnOwner">YOUR TURN</span>
+              <b id="turnNo">TURN 01</b>
+              <span id="phaseLabel">MAIN</span>
+            </div>
+          </div>
+          <span class="axis-line"></span>
+        </div>
+        <div class="board-row" id="myBoard" data-seat="0"></div>
+        <div class="board-bottomline"><span id="boardHint">手札を選び、スロットへ配置</span><span id="deckCount">DECK 19</span></div>
+        <div class="battle-readout" id="battleReadout" aria-live="polite"></div>
+      </section>
+
+      <section class="seat seat--me" id="mySeat">
+        <div class="action-bar" id="actionBar"></div>
+        <div class="hand-me" id="myHand"></div>
+        <div class="player-bar" id="myBar">
+          <div class="p-id">
+            <span class="p-name" id="myName">旅人</span>
+            <span class="p-tag" id="myTag">YOU</span>
+          </div>
+          <div class="p-lp">
+            <span class="lp-label">LP</span>
+            <span class="lp-value" id="myLp">4000</span>
+            <span class="lp-bar"><i id="myLpBar"></i></span>
+          </div>
+          <div class="p-meta"><span>手札 <b id="myHandCount">5</b></span><span>山札 <b id="myDeckCount">19</b></span></div>
+        </div>
+      </section>
+    </main>
+
+    <aside id="logPanel">
+      <div class="log-head"><span>DUEL LOG</span><b id="logRoom">ROOM</b></div>
+      <div id="logList" aria-live="polite"></div>
+      <div class="log-foot">TAP ROOM FOR INVITE</div>
+    </aside>
+
+    <div id="ticker"><span id="tickerText">ルームを開設しました。</span></div>
+
+    <div id="turnBanner" class="turn-banner"><span></span><b></b><span></span></div>
+
+    <div id="intro" class="intro">
+      <div class="intro-line"></div>
+      <div class="intro-title">北極決闘</div>
+      <div class="intro-sub">ARCTIC DUEL</div>
+      <div class="intro-room">ROOM <b id="introRoom">----</b> / JOINED</div>
+      <div class="intro-line"></div>
+    </div>
+
+    <div id="fxLayer" aria-hidden="true"></div>
+
+    <div id="roomModal" class="modal" hidden>
+      <div class="modal-card">
+        <button class="modal-close" id="roomClose" type="button">閉じる</button>
+        <div class="modal-kicker">ONLINE ROOM</div>
+        <h2>ルーム</h2>
+        <div class="room-big" id="modalRoom">----</div>
+        <div class="room-status" id="modalStatus">接続中</div>
+        <label class="field"><span>表示名</span><input id="nameInput" maxlength="14" autocomplete="off"></label>
+        <label class="field"><span>招待リンク</span><input id="inviteInput" readonly></label>
+        <div class="modal-actions">
+          <button id="copyBtn" class="btn btn--primary" type="button">リンクをコピー</button>
+          <button id="joinBtn" class="btn" type="button">このルームへ参加</button>
+          <button id="myRoomBtn" class="btn" type="button">自分のルーム</button>
+        </div>
+        <div class="join-row">
+          <input id="joinInput" placeholder="ROOM CODE" maxlength="8" autocomplete="off">
+          <button id="joinGo" class="btn" type="button">参加</button>
+        </div>
+        <div class="modal-actions modal-actions--low">
+          <button id="surrenderBtn" class="btn btn--danger" type="button">降参</button>
+          <button id="rematchBtn" class="btn" type="button">再戦</button>
+        </div>
+        <p class="modal-note">ルームは起動時に自動で開設されます。招待リンクを開いた端末が対戦相手として入室します。対戦相手がいない間は北極の守護者（AI）が相手を務めます。</p>
+      </div>
+    </div>
+
+    <div id="result" class="result" hidden>
+      <div class="result-card">
+        <div class="result-kicker" id="resultKicker">DUEL END</div>
+        <h2 id="resultTitle">勝利</h2>
+        <p id="resultText">LP 0</p>
+        <div class="result-actions">
+          <button id="resultRematch" class="btn btn--primary" type="button">再戦</button>
+          <button id="resultRoom" class="btn" type="button">ルーム</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast" role="status"></div>
+
+    <div id="waiting" class="waiting" hidden>
+      <div class="waiting-ring"></div>
+      <div class="waiting-kicker">ONLINE DUEL</div>
+      <h2>ホストの応答を待っています</h2>
+      <p id="waitingText">ルーム <b>----</b> に接続中。</p>
+      <button id="hostFallback" class="btn btn--primary" type="button">このルームを主催する</button>
+    </div>
+  </div>
+
+  <script src="vendor/mqtt.min.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
