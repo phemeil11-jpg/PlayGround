@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>MILLENNIUM DUEL — 千年の決闘</title>
+<meta name="description" content="オリジナルカードで遊ぶ、遊戯王風のブラウザカードバトル。召喚・魔法・罠・生贄を駆使してファラオの影に挑め。" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230b0613'/%3E%3Cpath d='M12 32q12-14 26-10 12 3 16 12-10 12-24 10-14-2-18-12z' fill='none' stroke='%23e7c878' stroke-width='3'/%3E%3Ccircle cx='31' cy='31' r='5' fill='%23e7c878'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<canvas id="sand" aria-hidden="true"></canvas>
+<div class="ambient" aria-hidden="true"></div>
+
+<svg class="svg-defs" aria-hidden="true" width="0" height="0">
+  <defs>
+    <linearGradient id="gGold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff4c0"/><stop offset=".45" stop-color="#e8c36a"/><stop offset="1" stop-color="#8f651f"/>
+    </linearGradient>
+    <linearGradient id="gGoldH" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff8d8"/><stop offset=".5" stop-color="#e7c878"/><stop offset="1" stop-color="#b58a35"/>
+    </linearGradient>
+    <radialGradient id="gSun" cx=".5" cy=".42" r=".62">
+      <stop offset="0" stop-color="#fffbe0"/><stop offset=".5" stop-color="#f4bc4b"/><stop offset="1" stop-color="#a34e13"/>
+    </radialGradient>
+    <radialGradient id="gMoon" cx=".5" cy=".42" r=".62">
+      <stop offset="0" stop-color="#e9e0ff"/><stop offset=".55" stop-color="#9a7ad4"/><stop offset="1" stop-color="#3a235e"/>
+    </radialGradient>
+    <linearGradient id="gTeal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#a8fff0"/><stop offset=".5" stop-color="#3fd0b4"/><stop offset="1" stop-color="#0d5e56"/>
+    </linearGradient>
+    <linearGradient id="gRose" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffc7e6"/><stop offset=".5" stop-color="#d977b2"/><stop offset="1" stop-color="#6b2450"/>
+    </linearGradient>
+    <linearGradient id="gEmber" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe6a0"/><stop offset=".5" stop-color="#ef8a34"/><stop offset="1" stop-color="#7c2a0c"/>
+    </linearGradient>
+    <filter id="softGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+</svg>
+
+<main id="app">
+  <!-- ======================= TITLE ======================= -->
+  <section id="titleScreen" class="screen title-screen">
+    <div class="title-ornament" aria-hidden="true">
+      <svg viewBox="0 0 400 400">
+        <circle cx="200" cy="200" r="186" fill="none" stroke="url(#gGold)" stroke-width="1.2" opacity=".55"/>
+        <circle cx="200" cy="200" r="166" fill="none" stroke="url(#gGold)" stroke-width=".7" stroke-dasharray="2 7" opacity=".45"/>
+        <circle cx="200" cy="200" r="150" fill="none" stroke="url(#gGold)" stroke-width="2" opacity=".22"/>
+        <g opacity=".5" fill="url(#gGold)">
+          <path d="M200 14l6 16h-12z"/><path d="M200 386l6-16h-12z"/>
+          <path d="M14 200l16-6v12z"/><path d="M386 200l-16-6v12z"/>
+        </g>
+        <g fill="none" stroke="url(#gGold)" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M104 214q42-62 104-44 46 14 72 46-28 44-80 42-62-2-96-44z" stroke-width="3" opacity=".85"/>
+          <path d="M126 140q54-34 108-6" stroke-width="2" opacity=".55"/>
+          <path d="M168 246q-8 26 10 38" stroke-width="2" opacity=".55"/>
+          <path d="M258 236q22 18 14 40" stroke-width="2" opacity=".45"/>
+        </g>
+        <circle cx="206" cy="202" r="19" fill="url(#gSun)" opacity=".9"/>
+        <circle cx="206" cy="202" r="7" fill="#120a1e"/>
+        <path d="M282 250l18 26" stroke="url(#gGold)" stroke-width="3" opacity=".5"/>
+      </svg>
+    </div>
+
+    <div class="title-inner">
+      <p class="eyebrow">A CARD DUEL OF THE MILLENNIUM</p>
+      <h1 class="title-logo">MILLENNIUM<span>DUEL</span></h1>
+      <p class="title-jp">千年の力が、カードに宿る。</p>
+      <p class="title-sub">召喚・魔法・罠・生贄。すべての一手が運命を変える。</p>
+
+      <div class="title-cards" aria-hidden="true">
+        <div class="title-card tc-a"><div class="mini-back"><span>☥</span></div></div>
+        <div class="title-card tc-b"><div class="mini-face"><span class="mf-rune">𓂀</span><b>PHARAOH</b></div></div>
+        <div class="title-card tc-c"><div class="mini-back"><span>☥</span></div></div>
+      </div>
+
+      <button id="playBtn" class="play-btn" aria-label="Play">
+        <span class="play-label">PLAY</span>
+        <span class="play-jp">デュエル開始</span>
+      </button>
+
+      <ul class="title-facts">
+        <li><b>4000</b><span>LP</span></li>
+        <li><b>40</b><span>CARDS</span></li>
+        <li><b>1</b><span>DUELIST</span></li>
+      </ul>
+
+      <p class="disclaimer">オリジナルカードを用いた遊戯王風のデュエルゲームです。Konami とは関係ありません。</p>
+    </div>
+    <div class="title-foot">MILLENNIUM DUEL · VER 1.0</div>
+  </section>
+
+  <!-- ======================= GAME ======================= -->
+  <section id="gameScreen" class="screen game-screen hidden">
+    <header class="topbar">
+      <div class="brand-small"><span class="bs-mark">☥</span><span class="bs-text">MILLENNIUM <b>DUEL</b></span></div>
+      <div class="turn-chip">
+        <span id="turnLabel">TURN 1</span>
+        <em id="phaseLabel">あなたのターン</em>
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn" id="logBtn" data-act="log" aria-label="Duel log" title="デュエルログ">▤</button>
+        <button class="icon-btn" id="soundBtn" data-act="sound" aria-label="Sound" title="サウンド">♪</button>
+        <button class="icon-btn" id="rulesBtn" data-act="rules" aria-label="Rules" title="ルール">?</button>
+        <button class="icon-btn" id="restartBtn" data-act="restart" aria-label="Restart" title="最初から">⟳</button>
+      </div>
+    </header>
+
+    <div class="game-body">
+      <div class="arena" id="arena">
+        <div class="arena-frame" aria-hidden="true"></div>
+
+        <section class="duelist ai" id="aiSide">
+          <div class="duelist-head" id="aiHead" data-side="ai">
+            <div class="avatar ai-avatar" aria-hidden="true">
+              <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#0c0616" stroke="url(#gGold)" stroke-width="1.5"/><path d="M14 34q10-12 22-9 10 3 14 10-8 10-20 9-12-1-16-10z" fill="none" stroke="url(#gGold)" stroke-width="2"/><circle cx="33" cy="33" r="4" fill="url(#gSun)"/></svg>
+            </div>
+            <div class="who">
+              <span class="who-name">ファラオの影</span>
+              <span class="who-sub">PHARAOH'S ECHO</span>
+            </div>
+            <div class="lp-wrap">
+              <div class="lp-top"><span>LIFE POINTS</span><b id="aiLpNum">4000</b></div>
+              <div class="lp-track"><i id="aiLpBar" style="width:100%"></i></div>
+            </div>
+            <div class="counts">
+              <span><b id="aiHandCount">5</b>手札</span>
+              <span><b id="aiDeckCount">35</b>デッキ</span>
+              <span><b id="aiGraveCount">0</b>墓地</span>
+            </div>
+          </div>
+
+          <div class="hand-backs" id="aiHand" aria-label="相手の手札"></div>
+
+          <div class="field-grid">
+            <div class="pile deck-pile" id="aiDeckPile" data-pile="ai" role="button" tabindex="0" aria-label="相手のデッキ">
+              <div class="pile-stack"><i></i><i></i><i></i><div class="pile-top"></div></div>
+              <span class="pile-label">DECK <b id="aiDeckCount2">35</b></span>
+            </div>
+            <div class="rows">
+              <div class="zones st-zones" id="aiSpell" data-side="ai" data-row="spell"></div>
+              <div class="zones mon-zones" id="aiMonster" data-side="ai" data-row="monster"></div>
+            </div>
+            <div class="pile grave-pile" id="aiGravePile" data-pile="ai" role="button" tabindex="0" aria-label="相手の墓地">
+              <div class="grave-box" id="aiGraveTop"></div>
+              <span class="pile-label">GY <b id="aiGraveCount2">0</b></span>
+            </div>
+          </div>
+        </section>
+
+        <div class="midline" aria-hidden="true"><i class="midline-seal"></i><span>MILLENNIUM DUEL</span></div>
+
+        <section class="duelist you" id="playerSide">
+          <div class="duelist-head" id="playerHead" data-side="player">
+            <div class="avatar you-avatar" aria-hidden="true">
+              <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="#0c0616" stroke="url(#gGold)" stroke-width="1.5"/><path d="M18 20l8 12 6-4 6 4 8-12 2 18-6 14H22l-6-14z" fill="none" stroke="url(#gGold)" stroke-width="2"/><path d="M26 38h12M32 32v14" stroke="url(#gGold)" stroke-width="1.6"/></svg>
+            </div>
+            <div class="who">
+              <span class="who-name">あなた</span>
+              <span class="who-sub">THE CHALLENGER</span>
+            </div>
+            <div class="lp-wrap">
+              <div class="lp-top"><span>LIFE POINTS</span><b id="playerLpNum">4000</b></div>
+              <div class="lp-track"><i id="playerLpBar" style="width:100%"></i></div>
+            </div>
+            <div class="counts">
+              <span><b id="playerHandCount">5</b>手札</span>
+              <span><b id="playerDeckCount">35</b>デッキ</span>
+              <span><b id="playerGraveCount">0</b>墓地</span>
+            </div>
+          </div>
+
+          <div class="field-grid">
+            <div class="pile grave-pile" id="playerGravePile" data-pile="player" role="button" tabindex="0" aria-label="あなたの墓地">
+              <div class="grave-box" id="playerGraveTop"></div>
+              <span class="pile-label">GY <b id="playerGraveCount2">0</b></span>
+            </div>
+            <div class="rows">
+              <div class="zones mon-zones" id="playerMonster" data-side="player" data-row="monster"></div>
+              <div class="zones st-zones" id="playerSpell" data-side="player" data-row="spell"></div>
+            </div>
+            <div class="pile deck-pile" id="playerDeckPile" data-pile="player" role="button" tabindex="0" aria-label="あなたのデッキ">
+              <div class="pile-stack"><i></i><i></i><i></i><div class="pile-top"></div></div>
+              <span class="pile-label">DECK <b id="playerDeckCount2">35</b></span>
+            </div>
+          </div>
+
+          <div class="hand" id="playerHand" aria-label="あなたの手札"></div>
+        </section>
+      </div>
+
+      <aside class="sidebar" id="sidebar">
+        <div class="log-panel">
+          <div class="log-head"><span>DUEL LOG</span><em>デュエルログ</em></div>
+          <ol class="log-list" id="logList"></ol>
+        </div>
+        <div class="side-tip">
+          <span class="tip-eye">☥</span>
+          <p>カードを選択 → アクションを選択。自分のモンスターを選んで相手をタップすると攻撃します。</p>
+        </div>
+      </aside>
+    </div>
+
+    <div class="action-bar" id="actionBar">
+      <div class="selection-info" id="selectionInfo">カードを選択してください</div>
+      <div class="action-buttons" id="actionButtons"></div>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </section>
+</main>
+
+<div id="fxLayer" class="fx-layer" aria-hidden="true"></div>
+<div id="modalRoot" class="modal-root"></div>
+<div class="rotate-hint" id="rotateHint" role="status">
+  <div class="rotate-badge" aria-hidden="true">
+    <svg viewBox="0 0 80 80">
+      <rect x="29" y="8" width="22" height="42" rx="5" fill="none" stroke="url(#gGold)" stroke-width="2"/>
+      <rect x="33" y="14" width="14" height="27" rx="2" fill="rgba(232,195,106,.14)"/>
+      <circle cx="40" cy="46" r="1.6" fill="url(#gGold)"/>
+      <path d="M18 62q22-12 44 0" fill="none" stroke="url(#gGold)" stroke-width="2" stroke-linecap="round"/>
+      <path d="M15 58l3 4 5-3M65 58l-3 4-5-3" fill="none" stroke="url(#gGold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M22 30a22 22 0 0 1 7-15M58 30a22 22 0 0 0-7-15" fill="none" stroke="rgba(232,195,106,.35)" stroke-width="1.4" stroke-dasharray="2 4"/>
+    </svg>
+  </div>
+  <p class="rotate-title">端末を縦にしてください</p>
+  <p class="rotate-sub">ROTATE YOUR DEVICE TO DUEL</p>
+</div>
+
+<script src="cards.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
