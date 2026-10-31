@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#04101d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="極夜遊戯 POLAR DUEL — 北極を舞台にした、攻守表式オンラインカードデュエル。">
+<title>極夜遊戯 / POLAR DUEL</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23061a2c'/%3E%3Ctext x='16' y='23' font-size='20' text-anchor='middle' fill='%23a9ecff' font-family='serif'%3E極%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+<div id="backdrop" aria-hidden="true">
+  <div class="sky"></div>
+  <div class="stars"></div>
+  <div class="aurora a1"></div>
+  <div class="aurora a2"></div>
+  <div class="aurora a3"></div>
+  <div class="north-star"></div>
+  <div class="ground g1"></div>
+  <div class="ground g2"></div>
+  <div class="ground g3"></div>
+  <canvas id="snow"></canvas>
+  <div class="fog"></div>
+  <div class="vignette"></div>
+  <div class="grain"></div>
+</div>
+
+<div class="app" id="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-jp">極夜遊戯</span>
+      <span class="brand-en">POLAR DUEL</span>
+    </div>
+    <div class="top-actions">
+      <button class="room-pill" id="roomBtn" type="button" title="ルームコードをコピー">
+        <span class="room-dot" id="roomDot"></span>
+        <span class="room-label">ROOM</span>
+        <b id="roomCode">·····</b>
+      </button>
+      <button class="chip-btn" id="shareBtn" type="button">招待</button>
+      <button class="chip-btn" id="tiltBtn" type="button" aria-pressed="false">TILT</button>
+    </div>
+  </header>
+
+  <main class="arena">
+    <section class="duelist rival" id="rivalHud" aria-label="相手の情報">
+      <div class="duelist-id">
+        <span class="sigil rival-sigil">N</span>
+        <div class="duelist-name">
+          <strong id="rivalName">北極の守護者</strong>
+          <span id="rivalTag">HOLOGRAM</span>
+        </div>
+      </div>
+      <div class="lp-wrap">
+        <div class="lp-bar"><i id="rivalLpBar"></i><span class="lp-shine"></span></div>
+        <div class="lp-num"><span id="rivalLp">4000</span><small>LP</small></div>
+      </div>
+      <div class="duelist-meta">
+        <span>手札 <b id="rivalHand">0</b></span>
+        <span>山 <b id="rivalDeck">0</b></span>
+        <span>墓 <b id="rivalGrave">0</b></span>
+      </div>
+    </section>
+
+    <div class="phase-strip">
+      <span class="turn-no" id="turnNo">TURN 1</span>
+      <span class="phase-name" id="phaseName">MAIN PHASE</span>
+      <span class="phase-dots" id="phaseDots" aria-hidden="true"><i class="on"></i><i></i><i></i></span>
+    </div>
+
+    <div class="board-shell" id="boardShell">
+      <div class="board-aura"></div>
+      <div class="board-frame">
+        <span class="frame-corner tl"></span><span class="frame-corner tr"></span>
+        <span class="frame-corner bl"></span><span class="frame-corner br"></span>
+        <div class="board" id="board" role="group" aria-label="デュエルフィールド">
+          <div class="board-mark" aria-hidden="true"><span>極</span><span>夜</span></div>
+          <div class="field-row" id="rivalField" data-side="rival"></div>
+          <div class="center-rift" aria-hidden="true"><span>ARCTIC DUEL FIELD</span></div>
+          <div class="field-row" id="playerField" data-side="player"></div>
+        </div>
+      </div>
+      <div class="target-hint" id="targetHint"></div>
+    </div>
+
+    <section class="duelist you" id="playerHud" aria-label="自分の情報">
+      <div class="duelist-id">
+        <span class="sigil you-sigil">S</span>
+        <div class="duelist-name">
+          <strong id="playerName">あなた</strong>
+          <span id="playerTag">ONLINE ROOM</span>
+        </div>
+      </div>
+      <div class="lp-wrap">
+        <div class="lp-bar"><i id="playerLpBar"></i><span class="lp-shine"></span></div>
+        <div class="lp-num"><span id="playerLp">4000</span><small>LP</small></div>
+      </div>
+      <div class="duelist-meta">
+        <span>手札 <b id="playerHand">0</b></span>
+        <span>山 <b id="playerDeck">0</b></span>
+        <span>墓 <b id="playerGrave">0</b></span>
+      </div>
+    </section>
+  </main>
+
+  <section class="hand-zone" aria-label="手札">
+    <div class="hand-head">
+      <span class="hand-title">HAND <b id="handCount">0</b></span>
+      <span class="hand-hint" id="handHint">カードを選択 → 光るマスへ</span>
+    </div>
+    <div class="hand" id="hand"></div>
+  </section>
+
+  <nav class="actionbar" aria-label="操作">
+    <button class="act-btn mode" id="modeBtn" type="button"><small>SUMMON</small><span>攻撃召喚</span></button>
+    <button class="act-btn phase" id="phaseBtn" type="button"><small>PHASE</small><span>バトルへ</span></button>
+    <button class="act-btn direct" id="directBtn" type="button" hidden><small>DIRECT</small><span>直接攻撃</span></button>
+    <button class="act-btn cancel" id="cancelBtn" type="button" hidden><small>CANCEL</small><span>解除</span></button>
+    <button class="act-btn end" id="endBtn" type="button"><small>END</small><span>ターン終了</span></button>
+  </nav>
+
+  <div class="ticker" id="ticker" aria-live="polite">
+    <span class="tick-mark">LOG</span>
+    <span id="tickerText">北極圏の氷上に、デュエルフィールドが展開された。</span>
+  </div>
+</div>
+
+<div class="banner" id="banner" aria-live="assertive"><b></b><i></i></div>
+<div class="toast" id="toast" role="status"></div>
+<div class="fx-layer" id="fxLayer" aria-hidden="true"></div>
+
+<div class="modal" id="resultModal" hidden>
+  <div class="result-card">
+    <span class="result-kicker" id="resultKicker">DUEL COMPLETE</span>
+    <h1 id="resultTitle">VICTORY</h1>
+    <p id="resultText">氷原に、あなたの勝利が響いた。</p>
+    <div class="result-actions">
+      <button class="result-btn" id="rematchBtn" type="button">再戦する</button>
+      <button class="result-btn quiet" id="closeResultBtn" type="button">盤面を見る</button>
+    </div>
+    <div class="result-room">ROOM <b id="resultRoom">·····</b></div>
+  </div>
+</div>
+
+<div class="connect-note" id="connectNote" hidden>
+  <span class="connect-dot"></span>
+  <span id="connectText">ルームを開いています</span>
+</div>
+
+<script type="module" src="./js/app.js"></script>
+</body>
+</html>
