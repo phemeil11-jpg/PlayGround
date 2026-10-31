@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+  <title>遊戯王 — Duel Legacy</title>
+  <meta name="description" content="A fan-made, touch-first Yu-Gi-Oh! inspired card duel for phone and tablet. Original cards, accelerometer tilt, and a full duel against Kaiba.">
+  <meta name="theme-color" content="#07060f">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Duel Legacy">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="preload" href="assets/fonts/cinzel-600.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/shippori-mincho-700.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div class="app" id="app">
+    <div class="scene-bg" id="scene-bg" aria-hidden="true">
+      <div class="bg-stars"></div>
+      <div class="bg-stars two"></div>
+      <div class="bg-orb"></div>
+      <div class="bg-pyramid p1"></div>
+      <div class="bg-pyramid p2"></div>
+      <div class="bg-pyramid p3"></div>
+      <div class="bg-pillar left"></div>
+      <div class="bg-pillar right"></div>
+      <div class="bg-vignette"></div>
+      <div class="bg-noise"></div>
+    </div>
+
+    <canvas id="fx" class="fx-canvas" aria-hidden="true"></canvas>
+    <div id="fx-layer" class="fx-layer" aria-hidden="true"></div>
+
+    <main class="duel-shell" id="duel-shell" aria-label="Duel table">
+      <header class="hud">
+        <div class="duelist ai" id="hud-ai">
+          <div class="avatar ai" id="avatar-ai"></div>
+          <div class="meta">
+            <div class="name-row"><span class="d-name">SETO KAIBA</span><span class="d-title">DRAGON DUELIST</span></div>
+            <div class="lp-row">
+              <div class="lp-bar"><i id="lpbar-ai"></i></div>
+              <b class="lp-num" id="lp-ai">8000</b>
+            </div>
+            <div class="piles"><span>DECK <b id="deck-ai">25</b></span><span>HAND <b id="handcount-ai">5</b></span><span>GY <b id="gy-ai">0</b></span></div>
+          </div>
+        </div>
+
+        <div class="turn-core" id="turn-core">
+          <span class="turn-label">TURN <b id="turn-num">01</b></span>
+          <span class="turn-phase" id="phase-top">MAIN</span>
+          <span class="thinking" id="thinking" aria-label="Opponent is thinking"><i></i><i></i><i></i></span>
+        </div>
+
+        <div class="duelist you" id="hud-player">
+          <div class="avatar" id="avatar-player"></div>
+          <div class="meta">
+            <div class="name-row"><span class="d-name">YUGI MUTO</span><span class="d-title">PHARAOH&rsquo;S VESSEL</span></div>
+            <div class="lp-row">
+              <div class="lp-bar"><i id="lpbar-player"></i></div>
+              <b class="lp-num" id="lp-player">8000</b>
+            </div>
+            <div class="piles"><span>DECK <b id="deck-player">25</b></span><span>HAND <b id="handcount-player">5</b></span><span>GY <b id="gy-player">0</b></span></div>
+          </div>
+        </div>
+      </header>
+
+      <section class="arena" id="arena" aria-label="Duel field">
+        <div class="opp-hand-wrap"><div class="opp-hand" id="ai-hand" aria-hidden="true"></div></div>
+        <div class="hint" id="hint" role="status"></div>
+
+        <div class="board-stage" id="board-stage">
+          <div class="board" id="board">
+            <span class="board-corner tl"></span><span class="board-corner tr"></span>
+            <span class="board-corner bl"></span><span class="board-corner br"></span>
+            <div class="board-rings" aria-hidden="true"></div>
+            <div class="half ai-half">
+              <div class="row spell-row" id="ai-spells"></div>
+              <div class="row monster-row" id="ai-monsters"></div>
+            </div>
+            <div class="midline" aria-hidden="true">
+              <span class="mid-line"></span>
+              <span class="mid-eye" id="mid-eye"></span>
+              <span class="mid-gem"></span>
+            </div>
+            <div class="half player-half">
+              <div class="row monster-row" id="player-monsters"></div>
+              <div class="row spell-row" id="player-spells"></div>
+            </div>
+            <div class="board-scan" aria-hidden="true"></div>
+          </div>
+        </div>
+
+        <button id="direct-btn" class="direct-btn" type="button">DIRECT ATTACK</button>
+      </section>
+
+      <footer class="bottom">
+        <div class="controls">
+          <div class="phase-chip"><span class="phase-dot"></span><span id="phase-label">MAIN PHASE</span></div>
+          <div class="phase-actions">
+            <button id="battle-btn" class="btn primary" type="button">BATTLE</button>
+            <button id="end-btn" class="btn ghost" type="button">END TURN</button>
+          </div>
+          <div class="tools">
+            <button id="tilt-btn" class="icon-btn" type="button" aria-label="Toggle tilt controls" aria-pressed="false" title="Toggle tilt">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3" width="10" height="18" rx="2.2"/><path d="M9.5 6.5h5M9.5 18.5h5"/><path d="M3 9a7 7 0 0 0 0 6M21 9a7 7 0 0 1 0 6"/></svg>
+            </button>
+            <button id="sound-btn" class="icon-btn on" type="button" aria-label="Toggle sound" aria-pressed="true" title="Toggle sound">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3L12 5v14L7 14.5H4z"/><path class="wave" d="M15.5 8.5a5 5 0 0 1 0 7M18 6a8.5 8.5 0 0 1 0 12"/></svg>
+            </button>
+            <button id="help-btn" class="icon-btn" type="button" aria-label="How to play" title="How to play">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.7 9.4a2.4 2.4 0 0 1 4.7.6c0 1.8-2.4 2-2.4 3.7"/><circle cx="12" cy="17.2" r=".9" fill="currentColor" stroke="none"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="hand-wrap" id="hand-wrap">
+          <div class="hand" id="hand" aria-label="Your hand"></div>
+        </div>
+      </footer>
+    </main>
+
+    <div class="tray" id="tray" aria-hidden="true">
+      <div class="tray-inner" id="tray-inner"></div>
+    </div>
+
+    <div class="toast" id="toast" role="status"></div>
+    <div class="banner" id="banner" role="status"></div>
+
+    <!-- ============================ TITLE ============================ -->
+    <section class="screen title-screen" id="title-screen">
+      <div class="title-stars" aria-hidden="true"></div>
+      <div class="title-pyramids" aria-hidden="true">
+        <span class="pyramid big"></span>
+        <span class="pyramid mid"></span>
+        <span class="pyramid small"></span>
+      </div>
+      <div class="float-card fc1" aria-hidden="true"></div>
+      <div class="float-card fc2" aria-hidden="true"></div>
+      <div class="float-card fc3" aria-hidden="true"></div>
+
+      <div class="title-content">
+        <div class="title-eye" id="title-eye" aria-hidden="true"></div>
+        <p class="title-kicker">A FAN-MADE CARD DUEL</p>
+        <h1 class="title-jp">遊戯王</h1>
+        <div class="title-rule"><span></span><b>DUEL LEGACY</b><span></span></div>
+        <p class="title-tag">DRAW · SUMMON · OBLITERATE</p>
+        <div class="title-actions">
+          <button id="play-btn" class="play-btn" type="button" aria-label="Play"><span>PLAY</span></button>
+          <button id="help-title-btn" class="title-btn ghost" type="button">HOW TO PLAY</button>
+        </div>
+        <div class="title-settings">
+          <button id="title-sound" class="title-btn" type="button">SOUND ON</button>
+          <button id="title-tilt" class="title-btn" type="button">TILT OFF</button>
+        </div>
+        <p class="tilt-note" id="tilt-note">Optional accelerometer tilt. iOS will ask for motion access.</p>
+      </div>
+
+      <p class="disclaimer">UNOFFICIAL FAN TRIBUTE · ORIGINAL CARDS &amp; ART</p>
+    </section>
+
+    <!-- ============================ HELP ============================ -->
+    <div class="modal" id="help-modal" hidden>
+      <div class="modal-card help-card" role="dialog" aria-modal="true" aria-labelledby="help-title">
+        <button class="modal-close" id="help-close" type="button" aria-label="Close">×</button>
+        <p class="modal-kicker">DUELIST&rsquo;S HANDBOOK</p>
+        <h2 id="help-title">HOW TO DUEL</h2>
+        <div class="help-grid">
+          <div class="help-item"><span class="help-icon">♜</span><h3>THE GOAL</h3><p>Reduce Kaiba&rsquo;s Life Points from 8000 to 0, or make him run out of cards. He is trying to do the same to you.</p></div>
+          <div class="help-item"><span class="help-icon">✦</span><h3>MAIN PHASE</h3><p>Tap a card in your hand. Summon one monster per turn, Set monsters face-down, or Set Spells and Traps.</p></div>
+          <div class="help-item"><span class="help-icon">⚔</span><h3>BATTLE PHASE</h3><p>Press Battle, tap your monster, then tap an enemy monster. If the field is empty, use Direct Attack. Higher ATK wins.</p></div>
+          <div class="help-item"><span class="help-icon">◆</span><h3>TRIBUTES</h3><p>Level 5–6 monsters need 1 Tribute. Level 7+ monsters need 2. Tap your own monsters when asked.</p></div>
+          <div class="help-item"><span class="help-icon">⌘</span><h3>TRAPS</h3><p>Set Traps face-down. They trigger automatically when Kaiba attacks or Summons — no activation needed.</p></div>
+          <div class="help-item"><span class="help-icon">◉</span><h3>TILT</h3><p>Turn on Tilt for a parallax view. On iPhone and iPad, tap Tilt and allow motion access when iOS asks.</p></div>
+        </div>
+        <p class="help-foot">TIP: Tap any card to read it. Tap the same card again to close.</p>
+      </div>
+    </div>
+
+    <!-- =========================== RESULT =========================== -->
+    <div class="modal result-modal" id="result-modal" hidden>
+      <div class="modal-card result-card" role="dialog" aria-modal="true" aria-labelledby="result-title">
+        <div class="result-glow" aria-hidden="true"></div>
+        <p class="modal-kicker" id="result-sub">THE DUEL IS OVER</p>
+        <h2 class="result-title win" id="result-title">VICTORY</h2>
+        <div class="result-stats" id="result-stats"></div>
+        <div class="result-actions">
+          <button id="rematch-btn" class="btn primary" type="button">DUEL AGAIN</button>
+          <button id="exit-btn" class="btn ghost" type="button">MAIN MENU</button>
+        </div>
+      </div>
+    </div>
+
+    <noscript><div class="noscript">This duel needs JavaScript enabled.</div></noscript>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
