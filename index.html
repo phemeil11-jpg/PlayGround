@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#05070f" />
+  <meta name="description" content="星の海を舞台にした、オリジナルカードのブラウザ・カードデュエル。全カード描き下ろし、AI対戦、召喚・罠・魔法演出つき。" />
+  <title>遊戯王 DUEL LEGENDS</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23090d18'/%3E%3Cpath d='M32 8l6 18 18 6-18 6-6 18-6-18-18-6 18-6z' fill='%23e9c46a'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div id="bg" aria-hidden="true">
+    <div class="stars"></div>
+    <div class="nebula a"></div>
+    <div class="nebula b"></div>
+    <div class="sigil"></div>
+    <div class="grid-floor"></div>
+    <div class="vignette"></div>
+  </div>
+
+  <!-- タイトル -->
+  <section id="title" class="title-screen">
+    <div class="title-glow"></div>
+    <div class="title-inner">
+      <p class="title-kicker">CARD DUEL CHRONICLE</p>
+      <h1 class="logo">
+        <span class="logo-kanji">遊戯王</span>
+        <span class="logo-sub">DUEL&nbsp;LEGENDS</span>
+      </h1>
+      <p class="tagline">星の海に、決闘の伝説を。</p>
+      <div class="title-cards" id="title-cards"></div>
+      <div class="title-actions">
+        <button class="btn primary xl" id="btn-start">デュエル開始</button>
+        <button class="btn ghost" id="btn-rules">遊び方</button>
+      </div>
+      <p class="title-note">オリジナルカードで贈るファンメイド・カードバトル</p>
+    </div>
+  </section>
+
+  <!-- デュエル -->
+  <main id="duel" class="duel hidden">
+    <div class="board">
+      <header class="opponent-bar bar">
+        <div class="avatar ai"><span>闇</span></div>
+        <div class="p-info">
+          <div class="p-name">闇の決闘者 <em>RIVAL</em></div>
+          <div class="lp-bar"><i id="ai-lp-fill"></i></div>
+        </div>
+        <div class="lp-num" id="ai-lp">8000</div>
+        <div class="counters">
+          <div class="counter"><span>手札</span><b id="ai-hand-count">5</b></div>
+          <div class="counter"><span>山札</span><b id="ai-deck-count">27</b></div>
+          <div class="counter"><span>墓地</span><b id="ai-grave-count">0</b></div>
+        </div>
+        <div class="ai-hand-strip" id="ai-hand-strip" aria-hidden="true"></div>
+      </header>
+
+      <section class="field ai-field" id="ai-field">
+        <div class="zone-row spell-row" id="ai-spells"></div>
+        <div class="zone-row monster-row" id="ai-monsters"></div>
+      </section>
+
+      <div class="midline">
+        <div class="mid-left">
+          <div class="phase-chip" id="phase-chip">メインフェイズ</div>
+          <div class="turn-orb"><small>TURN</small><b id="turn-num">1</b></div>
+        </div>
+        <div class="hint" id="hint">手札のカードを選んでください。</div>
+        <div class="mid-right">
+          <button id="btn-direct" class="btn tiny gold hidden">直接攻撃</button>
+          <button id="btn-cancel" class="btn tiny ghost hidden">キャンセル</button>
+        </div>
+      </div>
+
+      <section class="field my-field" id="my-field">
+        <div class="zone-row monster-row" id="my-monsters"></div>
+        <div class="zone-row spell-row" id="my-spells"></div>
+      </section>
+
+      <footer class="player-bar bar">
+        <div class="avatar me"><span>遊</span></div>
+        <div class="p-info">
+          <div class="p-name">あなた <em>YOU</em></div>
+          <div class="lp-bar"><i id="my-lp-fill"></i></div>
+        </div>
+        <div class="lp-num" id="my-lp">8000</div>
+        <div class="counters">
+          <div class="counter"><span>山札</span><b id="my-deck-count">27</b></div>
+          <div class="counter"><span>墓地</span><b id="my-grave-count">0</b></div>
+        </div>
+        <div class="actions">
+          <button id="btn-battle" class="btn small">⚔ バトル</button>
+          <button id="btn-end" class="btn small primary">ターン終了</button>
+        </div>
+        <div class="mobile-tools">
+          <button id="btn-log" class="btn tiny ghost">LOG</button>
+          <button id="btn-grave" class="btn tiny ghost">墓地</button>
+        </div>
+      </footer>
+
+      <div class="hand-area">
+        <div class="hand-label">HAND <b id="my-hand-count">5</b></div>
+        <div id="hand" class="hand"></div>
+      </div>
+    </div>
+
+    <aside class="sidebar" id="sidebar">
+      <div class="side-head">
+        <span>DUEL LOG</span>
+        <div class="side-tools">
+          <button id="btn-sound" class="icon-btn" title="サウンド">🔊</button>
+          <button id="btn-surrender" class="icon-btn" title="降参">⚑</button>
+        </div>
+      </div>
+      <div id="log" class="log"></div>
+      <div class="side-foot">
+        <span class="side-brand">遊戯王 DUEL LEGENDS</span>
+        <span class="side-ver">v1.0</span>
+      </div>
+    </aside>
+  </main>
+
+  <div id="fx" class="fx" aria-hidden="true"></div>
+  <div id="turn-banner" class="turn-banner">
+    <span id="turn-banner-main"></span>
+    <small id="turn-banner-sub"></small>
+  </div>
+  <div id="preview" class="preview hidden" aria-hidden="true"></div>
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- モーダル -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-panel">
+      <div class="modal-head">
+        <h2 id="modal-title"></h2>
+        <span id="modal-sub"></span>
+      </div>
+      <div id="modal-body" class="modal-body"></div>
+      <div id="modal-actions" class="modal-actions"></div>
+    </div>
+  </div>
+
+  <!-- 決着 -->
+  <div id="over" class="over hidden">
+    <div class="over-glow"></div>
+    <div class="over-inner">
+      <p class="over-kicker">DUEL RESULT</p>
+      <h2 id="over-title" class="win">勝利</h2>
+      <p id="over-sub"></p>
+      <button id="btn-retry" class="btn primary xl">もう一度デュエル</button>
+    </div>
+  </div>
+
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>
