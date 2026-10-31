@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#04121f">
+<meta name="description" content="北極を舞台にした、オンライン専用の攻守カードデュエル。4×2のフィールドで仲間と対戦。">
+<title>ARCTIC DUEL — 北極決闘</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="scene" aria-hidden="true">
+  <div class="aurora a1"></div>
+  <div class="aurora a2"></div>
+  <div class="aurora a3"></div>
+  <div class="stars"></div>
+  <div class="horizon-glow"></div>
+  <div class="icebergs">
+    <div class="berg b1"></div>
+    <div class="berg b2"></div>
+    <div class="berg b3"></div>
+    <div class="berg b4"></div>
+    <div class="berg b5"></div>
+    <div class="berg b6"></div>
+  </div>
+  <div class="fog"></div>
+  <div class="vignette"></div>
+  <canvas id="snow" aria-hidden="true"></canvas>
+</div>
+
+<div id="app">
+  <header class="topbar">
+    <button class="room-pill" data-act="invite" aria-label="ルーム情報を開く">
+      <span class="k">ROOM</span><b id="roomCode">-----</b>
+    </button>
+    <div class="turn-pill" id="turnPill">
+      <span id="turnNo">TURN 1</span><i></i><span id="phaseName">メイン</span>
+    </div>
+    <button class="menu-btn" data-act="menu">メニュー</button>
+  </header>
+
+  <div class="phase-rail" id="phaseRail" aria-hidden="true">
+    <span data-phase="draw">ドロー</span>
+    <span data-phase="main">メイン</span>
+    <span data-phase="battle">バトル</span>
+    <span data-phase="end">エンド</span>
+  </div>
+
+  <div class="waiting" id="waitingBanner">
+    <span class="live-dot"></span>
+    <span id="waitingText">対戦相手を待っています</span>
+    <button class="mini-btn" data-act="invite">招待する</button>
+  </div>
+
+  <section class="side opp" id="oppPanel">
+    <div class="side-head">
+      <div class="who"><span class="tag">対戦相手</span><b id="oppName">ゲスト</b></div>
+      <div class="lp"><span class="lp-label">LP</span><b id="oppLp">4000</b></div>
+    </div>
+    <div class="lpbar"><div class="lpfill opp" id="oppLpFill"></div></div>
+    <div class="side-foot">
+      <div class="piles">
+        <span>手札 <b id="oppHand">0</b></span>
+        <span>山札 <b id="oppDeck">0</b></span>
+        <span>墓地 <b id="oppGrave">0</b></span>
+      </div>
+      <div class="mini-hand" id="oppHandRow"></div>
+    </div>
+  </section>
+
+  <main class="table-wrap">
+    <div class="board" id="board">
+      <div class="row" id="oppRow"></div>
+      <div class="divider"><span>ARCTIC DUEL</span></div>
+      <div class="row" id="myRow"></div>
+    </div>
+  </main>
+
+  <section class="side you" id="youPanel">
+    <div class="side-head">
+      <div class="who"><span class="tag">あなた</span><b id="youName">ホスト</b></div>
+      <div class="lp"><span class="lp-label">LP</span><b id="youLp">4000</b></div>
+    </div>
+    <div class="lpbar"><div class="lpfill you" id="youLpFill"></div></div>
+    <div class="side-foot">
+      <div class="piles">
+        <span>手札 <b id="youHand">0</b></span>
+        <span>山札 <b id="youDeck">0</b></span>
+        <span>墓地 <b id="youGrave">0</b></span>
+      </div>
+      <div class="turn-flag" id="turnFlag">あなたのターン</div>
+    </div>
+  </section>
+
+  <button class="log-ticker" id="logTicker" data-act="log">
+    <span class="log-k">LOG</span>
+    <span id="logText">—</span>
+  </button>
+
+  <div class="hand-wrap">
+    <div class="hand" id="hand"></div>
+  </div>
+
+  <footer class="actionbar">
+    <div class="hint" id="hint">接続しています…</div>
+    <div class="action-btns" id="actionBtns"></div>
+  </footer>
+</div>
+
+<div class="scrim" id="inviteModal" hidden>
+  <div class="modal invite" role="dialog" aria-modal="true" aria-label="ルーム招待">
+    <div class="eyebrow">YOUR ROOM</div>
+    <div class="room-code" id="inviteCode">ABCDE</div>
+    <p class="muted">このコードを共有すると、相手が同じデュエルに参加できます。</p>
+    <div class="linkrow">
+      <input id="inviteLink" readonly aria-label="招待リンク">
+      <button class="btn small" data-act="copy">コピー</button>
+    </div>
+    <div class="statusline"><span class="live-dot"></span><span id="inviteStatus">対戦相手を待っています</span></div>
+    <button class="btn primary" data-act="open-tab">この端末の別タブで開く</button>
+    <button class="btn ghost" data-act="close">閉じる</button>
+    <p class="fine">オンライン専用です。同じルームコードを開いた2人で対戦します。</p>
+  </div>
+</div>
+
+<div class="scrim" id="menuModal" hidden>
+  <div class="modal menu" role="dialog" aria-modal="true" aria-label="メニュー">
+    <div class="eyebrow">MENU</div>
+    <button class="rowbtn" data-act="sound"><span>サウンド</span><b id="soundState">ON</b></button>
+    <button class="rowbtn" data-act="tilt"><span>傾き操作</span><b id="tiltState">OFF</b></button>
+    <button class="rowbtn" data-act="rules"><span>遊び方</span><b>開く</b></button>
+    <button class="rowbtn" data-act="log"><span>デュエルログ</span><b>開く</b></button>
+    <button class="rowbtn danger" data-act="surrender"><span>降参する</span><b>開く</b></button>
+    <button class="rowbtn" data-act="newroom"><span>新しいルーム</span><b>開く</b></button>
+    <div class="conninfo" id="connInfo">接続: —</div>
+    <button class="btn ghost" data-act="close">閉じる</button>
+  </div>
+</div>
+
+<div class="scrim" id="rulesModal" hidden>
+  <div class="modal rules" role="dialog" aria-modal="true" aria-label="遊び方">
+    <div class="eyebrow">HOW TO DUEL</div>
+    <h2>北極決闘のルール</h2>
+    <div class="rulegrid">
+      <div><b>勝利条件</b><span>相手のLPを0にするか、相手の山札を尽きさせる。</span></div>
+      <div><b>デッキ</b><span>お互い20枚。開始時5枚、毎ターン1枚ドロー。</span></div>
+      <div><b>召喚</b><span>1ターンに1回。Lv5・6は生贄1体、Lv7以上は生贄2体。</span></div>
+      <div><b>セット</b><span>裏側守備表示で置ける。攻撃されると正体が判明する。</span></div>
+      <div><b>魔法</b><span>1ターンに1回。カードの効果は手札の詳細で確認。</span></div>
+      <div><b>戦闘</b><span>攻撃表示同士はATK差、守備表示にはDEFとの差がダメージ。</span></div>
+      <div><b>直接攻撃</b><span>相手フィールドが空なら、ATK分がそのままLPへ。</span></div>
+      <div><b>先攻</b><span>先攻1ターン目はバトルフェイズに進めない。</span></div>
+    </div>
+    <button class="btn primary" data-act="close">わかった</button>
+  </div>
+</div>
+
+<div class="scrim" id="logModal" hidden>
+  <div class="modal log" role="dialog" aria-modal="true" aria-label="デュエルログ">
+    <div class="eyebrow">DUEL LOG</div>
+    <div class="loglist" id="logList"></div>
+    <button class="btn ghost" data-act="close">閉じる</button>
+  </div>
+</div>
+
+<div class="scrim" id="confirmModal" hidden>
+  <div class="modal confirm" role="dialog" aria-modal="true" aria-label="降参の確認">
+    <div class="eyebrow">SURRENDER</div>
+    <h2>降参しますか？</h2>
+    <p class="muted">このデュエルは相手の勝利になります。</p>
+    <button class="btn danger" data-act="surrender-confirm">降参する</button>
+    <button class="btn ghost" data-act="close">続ける</button>
+  </div>
+</div>
+
+<div class="scrim" id="resultModal" hidden>
+  <div class="modal result" role="dialog" aria-modal="true" aria-label="デュエル結果">
+    <div class="result-glow"></div>
+    <div class="eyebrow" id="resultEyebrow">DUEL RESULT</div>
+    <h1 id="resultTitle">勝利</h1>
+    <p id="resultReason" class="muted">相手のLPが0になりました。</p>
+    <div class="result-stats" id="resultStats"></div>
+    <button class="btn primary" id="rematchBtn" data-act="rematch">再戦する</button>
+    <button class="btn ghost" data-act="newroom">新しいルームへ</button>
+    <p class="fine" id="rematchNote">ホストが再戦を開始できます。</p>
+  </div>
+</div>
+
+<div class="scrim sheet-scrim" id="sheetModal" hidden>
+  <div class="sheet" id="sheetBody" role="dialog" aria-modal="true" aria-label="カード操作"></div>
+</div>
+
+<div class="scrim" id="offlineModal" hidden>
+  <div class="modal confirm" role="dialog" aria-modal="true" aria-label="接続エラー">
+    <div class="eyebrow">CONNECTION</div>
+    <h2>オンラインに接続できません</h2>
+    <p class="muted" id="offlineReason">通信環境を確認して、もう一度お試しください。</p>
+    <button class="btn primary" data-act="retry">再接続</button>
+    <button class="btn ghost" data-act="newroom">新しいルーム</button>
+  </div>
+</div>
+
+<div class="boot" id="bootVeil">
+  <div class="boot-ring"></div>
+  <div class="boot-text" id="bootText">ルームを生成しています</div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="vendor/mqtt.min.js"></script>
+<script type="module" src="js/main.js"></script>
+<noscript><p style="color:#fff;padding:20px">このゲームには JavaScript が必要です。</p></noscript>
+</body>
+</html>
