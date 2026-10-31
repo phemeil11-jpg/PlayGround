@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#04121f">
+  <meta name="description" content="ARCTIC DUEL — 極北攻守戦。4×2 の氷原で戦う、オンライン対応の攻守カードデュエル。">
+  <title>ARCTIC DUEL — 極北攻守戦</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="sky" aria-hidden="true">
+    <div class="aurora aurora-a"></div>
+    <div class="aurora aurora-b"></div>
+    <div class="aurora aurora-c"></div>
+    <div class="stars"></div>
+    <div class="horizon"></div>
+    <canvas id="snow"></canvas>
+    <div class="vignette"></div>
+  </div>
+
+  <div class="app" id="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">ARCTIC DUEL</span>
+        <span class="brand-sub">極北攻守戦 / POLAR ATTACK &amp; DEFENSE</span>
+      </div>
+      <div class="room-cluster">
+        <div class="room-chip">
+          <span class="room-label">ROOM</span>
+          <strong id="room-code" class="room-code">----</strong>
+          <span id="net-status" class="net-status" data-state="connecting">接続中</span>
+        </div>
+        <div class="top-actions">
+          <button type="button" class="chip" id="copy-room">コピー</button>
+          <button type="button" class="chip" id="open-join">参加</button>
+          <button type="button" class="chip" id="my-room" hidden>自分の部屋</button>
+          <button type="button" class="chip" id="tilt-btn" aria-pressed="false">傾き</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="stage">
+      <section class="duel-column" aria-label="デュエルフィールド">
+        <div class="hud hud-opponent" id="opp-hud">
+          <div class="portrait" id="opp-monogram">EC</div>
+          <div class="duelist">
+            <span class="duelist-name" id="opp-name">ECHO</span>
+            <span class="duelist-tag" id="opp-tag">TRAINING ECHO / 第2席</span>
+          </div>
+          <div class="life">
+            <div class="life-numbers"><span class="life-label">LP</span><strong id="opp-lp">4000</strong></div>
+            <div class="life-bar"><i id="opp-lp-bar"></i></div>
+          </div>
+          <div class="tally">
+            <span>手札 <b id="opp-hand">5</b></span>
+            <span>山札 <b id="opp-deck">20</b></span>
+            <span>墓地 <b id="opp-grave">0</b></span>
+          </div>
+        </div>
+
+        <div class="board-area">
+          <div class="row-caption row-caption-opp"><span>OPPONENT FIELD</span><i></i></div>
+          <div class="board" id="board" role="group" aria-label="4列2行のフィールド"></div>
+          <div class="row-caption row-caption-you"><span>YOUR FIELD</span><i></i></div>
+
+          <div class="phase-banner" id="phase-banner" aria-hidden="true"></div>
+          <div class="turn-banner" id="turn-banner" aria-hidden="true"></div>
+          <div class="impact-layer" id="impact-layer" aria-hidden="true"></div>
+        </div>
+
+        <div class="hud hud-player" id="you-hud">
+          <div class="portrait" id="you-monogram">YO</div>
+          <div class="duelist">
+            <span class="duelist-name" id="you-name">DUELIST</span>
+            <span class="duelist-tag" id="you-tag">第1席 / HOST</span>
+          </div>
+          <div class="life">
+            <div class="life-numbers"><span class="life-label">LP</span><strong id="you-lp">4000</strong></div>
+            <div class="life-bar"><i id="you-lp-bar"></i></div>
+          </div>
+          <div class="tally">
+            <span>手札 <b id="you-hand">5</b></span>
+            <span>山札 <b id="you-deck">20</b></span>
+            <span>墓地 <b id="you-grave">0</b></span>
+          </div>
+        </div>
+
+        <div class="command" id="command">
+          <div class="command-status">
+            <span class="phase-chip" id="phase-chip">MAIN</span>
+            <span class="hint" id="hint">カードを選んでください。</span>
+          </div>
+          <div class="actions" id="actions"></div>
+        </div>
+
+        <div class="hand-wrap">
+          <div class="hand-head"><span>YOUR HAND</span><i></i><span id="hand-count">5</span></div>
+          <div class="hand" id="hand" role="group" aria-label="自分の手札"></div>
+        </div>
+      </section>
+
+      <aside class="side" aria-label="デュエル情報">
+        <section class="panel room-panel">
+          <h2>YOUR ROOM</h2>
+          <div class="big-room" id="side-room-code">----</div>
+          <p class="room-note" id="room-note">あなたの部屋を自動で開設し、参加しています。コードを共有すると対戦相手が入室できます。</p>
+          <div class="room-meta">
+            <span>状態 <b id="side-status">接続中</b></span>
+            <span>対戦 <b id="side-opponent">ECHO</b></span>
+          </div>
+          <div class="room-buttons">
+            <button type="button" class="wide" id="side-copy">ルームコードをコピー</button>
+            <button type="button" class="wide quiet" id="side-join">コードで参加する</button>
+          </div>
+        </section>
+
+        <section class="panel log-panel">
+          <h2>DUEL LOG</h2>
+          <ol class="log" id="log" aria-live="polite"></ol>
+        </section>
+
+        <section class="panel rules-panel">
+          <h2>HOW TO DUEL</h2>
+          <p>手札をタップ → 光るマスをタップで召喚。自分のモンスターをタップして攻撃。相手のモンスターをタップして攻撃を解決します。</p>
+          <p class="rule-muted">ATK表示は攻撃表示、DEF表示は守備表示。守備表示への攻撃は突破できなければ自分がダメージを受けます。</p>
+        </section>
+      </aside>
+    </main>
+
+    <div class="ticker" id="ticker"><span id="ticker-text">極北の氷原に接続しています。</span></div>
+  </div>
+
+  <div class="sheet-backdrop" id="join-sheet" hidden>
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="join-title">
+      <h2 id="join-title">ルームに参加</h2>
+      <p>対戦相手から共有された4文字のルームコードを入力してください。</p>
+      <label class="code-label" for="join-code">ROOM CODE</label>
+      <input id="join-code" class="code-input" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="6" placeholder="ABCD">
+      <p class="sheet-error" id="join-error" role="alert"></p>
+      <div class="sheet-actions">
+        <button type="button" class="quiet" id="join-cancel">キャンセル</button>
+        <button type="button" id="join-go">入室する</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheet-backdrop" id="over-sheet" hidden>
+    <div class="sheet over-sheet" role="dialog" aria-modal="true" aria-labelledby="over-title">
+      <span class="over-kicker">DUEL COMPLETE</span>
+      <h2 id="over-title">WIN</h2>
+      <p id="over-reason">相手のライフポイントが0になった。</p>
+      <div class="over-stats" id="over-stats"></div>
+      <div class="sheet-actions">
+        <button type="button" class="quiet" id="over-room">自分の部屋へ</button>
+        <button type="button" id="over-again">再戦</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="vendor/peerjs.min.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
