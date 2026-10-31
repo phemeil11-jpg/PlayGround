@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#040b16">
+<meta name="description" content="北極を舞台にした、4×2マスのオンライン対戦カードゲーム。">
+<link rel="icon" href="data:,">
+<title>北極デュエル / Arctic Duel</title>
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+
+<div id="bg" aria-hidden="true">
+  <div class="bg-layer" data-depth="0.35">
+    <div class="stars"></div>
+    <div class="aurora a1"></div>
+    <div class="aurora a2"></div>
+    <div class="aurora a3"></div>
+  </div>
+  <div class="bg-layer" data-depth="0.7">
+    <div class="icefield"></div>
+    <div class="icefield second"></div>
+  </div>
+  <div class="vignette"></div>
+</div>
+<canvas id="snow" aria-hidden="true"></canvas>
+
+<main id="app">
+
+  <header id="hud">
+    <div class="lp-block me">
+      <div class="pname">あなた</div>
+      <div class="lp-row"><span class="lp-num" id="meLp">4000</span><span class="pmeta" id="meMeta">手5・山28・墓0</span></div>
+      <div class="lpbar"><i id="meBar"></i></div>
+    </div>
+    <div class="turn-center">
+      <div id="turn" class="turn">待機中</div>
+      <div id="status" class="status">接続中…</div>
+    </div>
+    <div class="lp-block opp">
+      <div class="pname">相手</div>
+      <div class="lp-row"><span class="pmeta" id="oppMeta">手5・山28・墓0</span><span class="lp-num" id="oppLp">4000</span></div>
+      <div class="lpbar"><i id="oppBar"></i></div>
+    </div>
+  </header>
+
+  <div id="subbar">
+    <span id="roomLabel" class="room-label">ROOM ----</span>
+    <span class="subbar-spacer"></span>
+    <button class="btn tiny" id="inviteBtn" type="button">招待</button>
+    <button class="btn tiny" id="menuBtn" type="button">メニュー</button>
+  </div>
+
+  <section id="boardWrap" aria-label="デュエルフィールド">
+    <div id="board" aria-label="4列2段のフィールド">
+      <div id="zones"></div>
+    </div>
+  </section>
+
+  <section id="handbar" aria-label="手札">
+    <div id="hand"></div>
+  </section>
+
+  <section id="actions" aria-label="操作">
+    <div id="hint">カードを選んでください</div>
+    <div id="actionBtns"></div>
+  </section>
+
+</main>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<div id="wait" class="overlay">
+  <div class="panel wait-panel" id="waitPanel"></div>
+</div>
+
+<div id="over" class="overlay hidden">
+  <div class="panel result-panel" id="resultPanel"></div>
+</div>
+
+<div id="rules" class="overlay hidden">
+  <div class="panel rules-panel">
+    <div class="panel-top">
+      <h2>ルール</h2>
+      <button class="btn tiny" data-close="rules" type="button">閉じる</button>
+    </div>
+    <div id="rulesBody" class="scroll-body"></div>
+  </div>
+</div>
+
+<div id="logmodal" class="overlay hidden">
+  <div class="panel log-panel">
+    <div class="panel-top">
+      <h2>デュエルログ</h2>
+      <button class="btn tiny" data-close="logmodal" type="button">閉じる</button>
+    </div>
+    <div id="logBody" class="scroll-body log-list"></div>
+  </div>
+</div>
+
+<div id="menu" class="overlay hidden">
+  <div class="panel menu-panel">
+    <div class="panel-top">
+      <h2>メニュー</h2>
+      <button class="btn tiny" data-close="menu" type="button">閉じる</button>
+    </div>
+    <div id="menuInfo" class="menu-info"></div>
+    <div class="menu-grid">
+      <button class="btn" data-menu="rules" type="button">ルール</button>
+      <button class="btn" data-menu="log" type="button">ログ</button>
+      <button class="btn" data-menu="result" type="button">結果</button>
+      <button class="btn" data-menu="rematch" type="button">再戦</button>
+      <button class="btn" data-menu="copy" type="button">招待リンク</button>
+      <button class="btn" data-menu="sound" type="button" id="soundBtn">音 ON</button>
+      <button class="btn" data-menu="tilt" type="button" id="tiltBtn">傾き OFF</button>
+      <button class="btn danger" data-menu="surrender" type="button">降参</button>
+      <button class="btn danger" data-menu="leave" type="button">退出</button>
+    </div>
+  </div>
+</div>
+
+<div id="detail" class="overlay hidden">
+  <div class="panel detail-panel" id="detailPanel"></div>
+</div>
+
+<script src="./mqtt.min.js"></script>
+<script type="module" src="./js/main.js"></script>
+</body>
+</html>
