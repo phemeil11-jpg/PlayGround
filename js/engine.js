@@ -201,7 +201,7 @@ function destroyMonster(state, p, zone, { battle = false, cause = 'battle', igno
   if (!card) return false;
   const def = cardDef(card);
 
-  if (battle && card.shield && !card.shieldUsed && !ignoreShield) {
+  if (battle && def.shield && !card.shieldUsed && !ignoreShield) {
     card.shieldUsed = true;
     card.faceDown = false;
     card.position = 'def';
@@ -330,6 +330,7 @@ function activateSpell(state, p, action) {
   }
   if (def.spell === 'equip') {
     if (!target || targetPlayer !== p) return err('自分のモンスターを対象に選んでください。');
+    if (target.faceDown) return err('表側のモンスターに装備してください。');
     if (emptyZone(player.spells) < 0) return err('魔法・罠ゾーンに空きがない。');
   }
   if (def.spell === 'revive') {
@@ -379,6 +380,8 @@ function activateSpell(state, p, action) {
       revived.faceDown = false;
       revived.hasAttacked = true;
       revived.summonedTurn = state.turn;
+      revived.positionChanged = false;
+      revived.frozen = 0;
       revived.buff = 0;
       const zone = emptyZone(player.monsters);
       if (zone >= 0) {
@@ -476,6 +479,7 @@ function changePosition(state, p, action) {
   const card = player.monsters[zone];
   if (!card) return err('モンスターがいない。');
   if (card.frozen > 0) return err('凍結していて表示形式を変更できない。');
+  if (card.summonedTurn === state.turn) return err('召喚・セットしたターンは表示形式を変更できない。');
   if (card.positionChanged) return err('このモンスターはこのターン表示形式を変更した。');
   if (card.hasAttacked) return err('攻撃したモンスターは表示形式を変更できない。');
   const to = action.to === 'def' ? 'def' : action.to === 'atk' ? 'atk' : (card.position === 'atk' ? 'def' : 'atk');
@@ -535,6 +539,7 @@ function resolveBattle(state, p, action) {
     return ok();
   }
   const atk = atkOf(liveAttacker);
+  const attackerDef = cardDef(liveAttacker);
 
   if (targetZone === null) {
     log(state, 'ダイレクトアタック。', 'attack');
@@ -562,7 +567,7 @@ function resolveBattle(state, p, action) {
     const d = defOf(target);
     if (atk > d) {
       destroyTarget = true;
-      if (targetDef.piercing) damage = atk - d;
+      if (attackerDef.piercing) damage = atk - d;
       log(state, `${targetDef.name} を突破。`, 'attack');
     } else {
       log(state, `${targetDef.name} の守備力に阻まれた。`, 'attack');

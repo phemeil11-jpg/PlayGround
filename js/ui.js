@@ -330,6 +330,10 @@ export class UI {
     $('oppHandRow').innerHTML = parts.join('');
   }
 
+  viewerHidden(owner, card) {
+    return Boolean(card && (card.hidden || (owner !== this.you && card.faceDown)));
+  }
+
   renderBoard() {
     const state = this.state;
     for (const [owner, row, el] of [
@@ -343,7 +347,7 @@ export class UI {
         const targetable = this.zoneTargetable(owner, row, zone, card);
         let inner = '';
         if (card) {
-          const hidden = card.hidden || (owner !== this.you && card.faceDown);
+          const hidden = this.viewerHidden(owner, card);
           const ownSet = owner === this.you && card.faceDown;
           const selected = Boolean(this.selectedMonster && this.selectedMonster.p === owner && this.selectedMonster.z === zone);
           inner = cardMarkup(card, { context: 'board', owner, row, zone, hidden, ownSet, selected, targetable });
@@ -354,7 +358,7 @@ export class UI {
         return `<div class="zone${targetable ? ' targetable' : ''}${emptyGlow ? ' targetable' : ''}${card ? ' occupied' : ''}${selectedZone(this, owner, zone) ? ' selected' : ''}"
           id="zone-${owner}-${row}-${zone}" data-owner="${owner}" data-row="${row}" data-zone="${zone}"
           role="button" tabindex="${this.interactiveZone(owner, row, zone, card) ? '0' : '-1'}"
-          aria-label="${card ? (card.hidden ? '伏せられたカード' : esc(cardDef(card)?.name || 'カード')) : '空きマス'}">
+          aria-label="${card ? (this.viewerHidden(owner, card) ? '伏せられたカード' : esc(cardDef(card)?.name || 'カード')) : '空きマス'}">
           ${innerFinal}
         </div>`;
       }).join('');
@@ -410,7 +414,7 @@ export class UI {
     if (this.selectedMonster) {
       const { p, z } = this.selectedMonster;
       const card = this.state.players[p].monsters[z];
-      if (card && card.hidden) {
+      if (this.viewerHidden(p, card)) {
         strip.innerHTML = `<span class="info-kicker">FACE DOWN <em>守備表示</em></span><span class="info-text">相手の伏せモンスター。攻撃するか、破壊するまで正体は分からない。</span>`;
         return;
       }
@@ -499,7 +503,7 @@ export class UI {
           buttons.push([need ? `セット ${need}` : 'セット', '', 'set-monster', !can]);
         } else if (def.type === 'spell') {
           const targetZone = state.players[1 - this.you].monsters.some(Boolean);
-          const ownZone = state.players[this.you].monsters.some(Boolean);
+          const ownZone = state.players[this.you].monsters.some((c) => c && !c.faceDown);
           const backFree = state.players[this.you].spells.some((c) => !c);
           const graveMon = state.players[this.you].grave.some((c) => cardDef(c).type === 'monster');
           const zoneFree = state.players[this.you].monsters.some((c) => !c);
@@ -521,7 +525,7 @@ export class UI {
     if (this.selectedMonster) {
       const { p, z } = this.selectedMonster;
       const card = state.players[p].monsters[z];
-      if (card && card.hidden) {
+      if (this.viewerHidden(p, card)) {
         hint = '伏せられたモンスター';
         buttons.push(['キャンセル', 'ghost', 'cancel']);
         return this.paintBar(bar, hint, buttons);
@@ -532,7 +536,7 @@ export class UI {
         if (p === this.you) {
           const canAct = myTurn;
           const canAttack = canAct && !card.faceDown && card.position === 'atk' && !card.hasAttacked;
-          const canChange = canAct && !card.frozen && !card.positionChanged && !card.hasAttacked;
+          const canChange = canAct && !card.frozen && !card.positionChanged && !card.hasAttacked && card.summonedTurn !== state.turn;
           if (def.type === 'monster' && canAttack) buttons.push(['攻撃', 'primary', 'attack-mode']);
           if (canChange) {
             buttons.push([card.faceDown ? '反転召喚' : card.position === 'atk' ? '守備へ' : '攻撃へ', '', 'position', false]);
@@ -619,7 +623,7 @@ export class UI {
     if (row === 'spells' && card) {
       this.selectedHand = null;
       this.selectedMonster = null;
-      this.toast(card.hidden ? '伏せられたカード。' : `${cardDef(card).name}`, 'info');
+      this.toast(this.viewerHidden(owner, card) ? '伏せられたカード。' : `${cardDef(card).name}`, 'info');
       return;
     }
     this.selectedHand = null;
@@ -652,7 +656,7 @@ export class UI {
       const hand = this.state.players[this.you].hand.find((c) => c.uid === this.pending.uid);
       if (!hand) return false;
       const def = cardDef(hand);
-      if (def.spell === 'equip') return owner === this.you && row === 'monsters' && Boolean(card);
+      if (def.spell === 'equip') return owner === this.you && row === 'monsters' && Boolean(card) && !card.faceDown;
       return owner === 1 - this.you && row === 'monsters' && Boolean(card);
     }
     return false;
